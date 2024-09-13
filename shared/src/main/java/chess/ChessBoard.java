@@ -58,12 +58,12 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        StringBuilder outstr = new StringBuilder("ChessBoard[\n  ");
+        StringBuilder outstr = new StringBuilder("ChessBoard[\n    ");
 
         for (int i = 0; i < squares.length; i++) {
             outstr.append(Arrays.toString(squares[i]) + "\n");
             if (i < squares.length - 1) {
-                outstr.append("  ");
+                outstr.append("    ");
             }
         }
 
