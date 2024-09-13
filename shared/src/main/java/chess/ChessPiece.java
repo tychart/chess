@@ -64,4 +64,9 @@ public class ChessPiece {
 
 
     }
+
+    @Override
+    public String toString() {
+        return "[" + this.pieceColor + " " + this.type + "]";
+    }
 }
