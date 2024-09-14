@@ -58,16 +58,28 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        StringBuilder outstr = new StringBuilder("ChessBoard[\n    ");
+        StringBuilder outStr = new StringBuilder("ChessBoard[\n    ");
 
-        for (int i = 0; i < squares.length; i++) {
-            outstr.append(Arrays.toString(squares[i]) + "\n");
-            if (i < squares.length - 1) {
-                outstr.append("    ");
+        for (int i = squares.length - 1; i >= 0; i--) {
+            outStr.append(i + 1);
+            outStr.append(" ");
+            for (int j = 0; j < squares[i].length; j++) {
+                ChessPiece newEntry = squares[i][j];
+                if (newEntry == null) {
+                    outStr.append(" -- ");
+                } else {
+                    outStr.append(newEntry.toString());
+                }
+            }
+            outStr.append("\n");
+            if (i > 0) {
+                outStr.append("    ");
             }
         }
 
-        return outstr.append("]").toString();
+        outStr.append("       1   2   3   4   5   6   7   8\n");
+
+        return outStr.append("]").toString();
     }
 }
 

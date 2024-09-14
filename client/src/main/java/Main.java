@@ -6,12 +6,14 @@ public class Main {
 //        System.out.println("♕ 240 Chess Client: " + piece);
         System.out.println("Started Program");
 
+//        System.out.println(String.valueOf('A')).ordinal();
+
         ChessGame game = new ChessGame();
         ChessBoard board = new ChessBoard();
 
-        ChessPosition currPos = new ChessPosition(4, 4);
+        ChessPosition currPos = new ChessPosition(4, 5);
 
-        board.addPiece(currPos, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
+        board.addPiece(currPos, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
         System.out.println(board);
 
         ChessPiece currPiece = board.getPiece(currPos);

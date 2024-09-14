@@ -79,7 +79,12 @@ public class ChessPiece {
         switch (this.type) {
             case KING -> this.movesKing(board, myPosition);
             case QUEEN -> this.movesQueen(board, myPosition);
-
+            case BISHOP -> this.movesBishop(board, myPosition);
+            case KNIGHT -> this.movesQueen(board, myPosition);
+            case ROOK -> this.movesQueen(board, myPosition);
+            case PAWN -> this.movesQueen(board, myPosition);
+            default ->
+                    throw new RuntimeException("Used Wrong PieceType! PieceType Entered: " + this.type + " Expected Enum of ChessPiece.PieceType");
         }
 
         return this.movesPossible;
@@ -110,6 +115,14 @@ public class ChessPiece {
 
     }
 
+    private void movesBishop(ChessBoard board, ChessPosition myPosition) {
+        search(board, myPosition, Direction.UPLEFT, 10);
+        search(board, myPosition, Direction.UPRIGHT, 10);
+        search(board, myPosition, Direction.DOWNLEFT, 10);
+        search(board, myPosition, Direction.DOWNRIGHT, 10);
+
+    }
+
 //    private Collection<ChessMove> movesBishop(ChessBoard board, ChessPosition myPosition) {
 //        return true;
 //    }
@@ -133,22 +146,31 @@ public class ChessPiece {
         for (int i = 1; i < numSearch + 1; i++) {
 
             switch (direction) {
-                case UP -> newPos = new ChessPosition(myPosition.getRow() + i, myPosition.getColumn());
-                case DOWN -> newPos = new ChessPosition(myPosition.getRow() - i, myPosition.getColumn());
-                case LEFT -> newPos = new ChessPosition(myPosition.getRow(), myPosition.getColumn() - i);
-                case RIGHT -> newPos = new ChessPosition(myPosition.getRow(), myPosition.getColumn() + i);
-                case UPLEFT -> newPos = new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() - i);
-                case UPRIGHT -> newPos = new ChessPosition(myPosition.getRow() + i, myPosition.getColumn() + i);
-                case DOWNLEFT -> newPos = new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() - i);
-                case DOWNRIGHT -> newPos = new ChessPosition(myPosition.getRow() - i, myPosition.getColumn() + i);
+                case UP -> newPos = new ChessPosition(myPosition.getRow() + i + 1, myPosition.getColumn() + 1);
+                case DOWN -> newPos = new ChessPosition(myPosition.getRow() - i + 1, myPosition.getColumn() + 1);
+                case LEFT -> newPos = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - i + 1);
+                case RIGHT -> newPos = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + i + 1);
+                case UPLEFT -> newPos = new ChessPosition(myPosition.getRow() + i + 1, myPosition.getColumn() - i + 1);
+                case UPRIGHT -> newPos = new ChessPosition(myPosition.getRow() + i + 1, myPosition.getColumn() + i + 1);
+                case DOWNLEFT ->
+                        newPos = new ChessPosition(myPosition.getRow() - i + 1, myPosition.getColumn() - i + 1);
+                case DOWNRIGHT ->
+                        newPos = new ChessPosition(myPosition.getRow() - i + 1, myPosition.getColumn() + i + 1);
                 default ->
                         throw new RuntimeException("Used Wrong Direction! Direction Entered: " + direction + " Expected Enum of ChessPiece.Direction");
             }
 
-            if (board.getPiece(newPos) == null) {
-                this.movesPossible.add(new ChessMove(myPosition, newPos, this.type));
-            } else {
-                return;
+            // Catch out of bounds queries
+            if (
+                    newPos.getRow() >= 0 &&
+                            newPos.getColumn() >= 0 &&
+                            newPos.getRow() < 8 &&
+                            newPos.getColumn() < 8
+            ) {
+                // Catch piece collisions
+                if (board.getPiece(newPos) == null) {
+                    this.movesPossible.add(new ChessMove(myPosition, newPos, this.type));
+                }
             }
         }
 
@@ -156,6 +178,6 @@ public class ChessPiece {
 
     @Override
     public String toString() {
-        return "[" + this.pieceColor + " " + this.type + "]";
+        return "" + this.pieceColor.toString().substring(0, 1) + " " + this.type.toString().substring(0, 2) + "";
     }
 }

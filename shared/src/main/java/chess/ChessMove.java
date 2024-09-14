@@ -14,7 +14,7 @@ public class ChessMove {
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition, ChessPiece.PieceType promotionPiece) {
         this.startPosition = startPosition;
-        this.endPosition = startPosition;
+        this.endPosition = endPosition;
         this.promotionPiece = promotionPiece;
     }
 
@@ -42,8 +42,28 @@ public class ChessMove {
         return this.promotionPiece;
     }
 
+//    @Override
+//    public String toString() {
+//        return "[" + this.startPosition + " -> " + this.endPosition + "]";
+//    }
+
     @Override
     public String toString() {
-        return "[" + this.startPosition + " -> " + this.endPosition + "]";
+        StringBuilder outstr = new StringBuilder("ChessMove[\n8 ");
+
+        for (int i = 7; i >= 0; i--) {
+            for (int j = 0; j < 8; j++) {
+                if (i == this.startPosition.getRow() && j == this.startPosition.getColumn()) {
+                    outstr.append(" S ");
+                } else if (i == this.endPosition.getRow() && j == this.endPosition.getColumn()) {
+                    outstr.append(" E ");
+                } else {
+                    outstr.append(" * ");
+                }
+            }
+            outstr.append("\n" + i + " ");
+        }
+        outstr.append("\n");
+        return outstr.toString();
     }
 }
