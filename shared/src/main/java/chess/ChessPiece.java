@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Represents a single chess piece
@@ -60,9 +61,53 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+//        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> return_collection = new HashSet<>();
+
+        switch (this.type) {
+            case KING -> {
+                return this.movesKing(return_collection, board, myPosition);
+            }
+            case QUEEN -> {
+                return this.movesQueen();
+            }
+
+        }
+
+    }
+
+    private Collection<ChessMove> movesKing(Collection<ChessMove> return_set, ChessBoard board, ChessPosition myPosition) {
+//        return Collection(new ChessMove(new ChessPosition(1,2), new ChessPosition(4, 5), this.type);
 
 
+    }
+
+    private Collection<ChessMove> movesQueen(ChessBoard board, ChessPosition myPosition) {
+        return true;
+    }
+
+    private Collection<ChessMove> movesBishop(ChessBoard board, ChessPosition myPosition) {
+        return true;
+    }
+
+    private Collection<ChessMove> movesKnight() {
+        return true;
+    }
+
+    private Collection<ChessMove> movesRook() {
+        return true;
+    }
+
+    private Collection<ChessMove> movesPawn() {
+        return true;
+    }
+
+    private Collection<ChessMove> searchUp(Collection<ChessMove> return_set, ChessBoard board, ChessPosition myPosition) {
+
+        ChessPosition new_pos = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn());
+        if (board.getPiece(new_pos) != null) {
+
+        }
     }
 
     @Override
