@@ -40,4 +40,9 @@ public class ChessPosition {
         return this.col;
 
     }
+
+    @Override
+    public String toString() {
+        return "(" + this.row + ", " + this.col + ")";
+    }
 }

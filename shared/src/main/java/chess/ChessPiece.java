@@ -130,7 +130,7 @@ public class ChessPiece {
 
         ChessPosition newPos = null;
 
-        for (int i = 0; i < numSearch; i++) {
+        for (int i = 1; i < numSearch + 1; i++) {
 
             switch (direction) {
                 case UP -> newPos = new ChessPosition(myPosition.getRow() + i, myPosition.getColumn());
