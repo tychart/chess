@@ -11,7 +11,7 @@ public class Main {
         ChessGame game = new ChessGame();
         ChessBoard board = new ChessBoard();
 
-        ChessPosition currPos = new ChessPosition(4, 5);
+        ChessPosition currPos = new ChessPosition(5, 4);
 
         board.addPiece(currPos, new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
         System.out.println(board);

@@ -43,6 +43,14 @@ public class ChessPiece {
         UPRIGHT,
         DOWNLEFT,
         DOWNRIGHT,
+        KLEFTUP,
+        KUPLEFT,
+        KUPRIGHT,
+        KRIGHTUP,
+        KRIGHTDOWN,
+        KDOWNRIGHT,
+        KDOWNLEFT,
+        KLEFTDOWN
     }
 
     /**
@@ -80,9 +88,9 @@ public class ChessPiece {
             case KING -> this.movesKing(board, myPosition);
             case QUEEN -> this.movesQueen(board, myPosition);
             case BISHOP -> this.movesBishop(board, myPosition);
-            case KNIGHT -> this.movesQueen(board, myPosition);
-            case ROOK -> this.movesQueen(board, myPosition);
-            case PAWN -> this.movesQueen(board, myPosition);
+            case KNIGHT -> this.movesKnight(board, myPosition);
+            case ROOK -> this.movesRook(board, myPosition);
+            case PAWN -> this.movesPawn(board, myPosition);
             default ->
                     throw new RuntimeException("Used Wrong PieceType! PieceType Entered: " + this.type + " Expected Enum of ChessPiece.PieceType");
         }
@@ -91,7 +99,6 @@ public class ChessPiece {
     }
 
     private void movesKing(ChessBoard board, ChessPosition myPosition) {
-//        return Collection(new ChessMove(new ChessPosition(1,2), new ChessPosition(4, 5), this.type);
         search(board, myPosition, Direction.UP, 1);
         search(board, myPosition, Direction.DOWN, 1);
         search(board, myPosition, Direction.LEFT, 1);
@@ -100,7 +107,6 @@ public class ChessPiece {
         search(board, myPosition, Direction.UPRIGHT, 1);
         search(board, myPosition, Direction.DOWNLEFT, 1);
         search(board, myPosition, Direction.DOWNRIGHT, 1);
-
     }
 
     private void movesQueen(ChessBoard board, ChessPosition myPosition) {
@@ -112,7 +118,6 @@ public class ChessPiece {
         search(board, myPosition, Direction.UPRIGHT, 10);
         search(board, myPosition, Direction.DOWNLEFT, 10);
         search(board, myPosition, Direction.DOWNRIGHT, 10);
-
     }
 
     private void movesBishop(ChessBoard board, ChessPosition myPosition) {
@@ -123,43 +128,42 @@ public class ChessPiece {
 
     }
 
-//    private Collection<ChessMove> movesBishop(ChessBoard board, ChessPosition myPosition) {
-//        return true;
-//    }
-//
-//    private Collection<ChessMove> movesKnight() {
-//        return true;
-//    }
-//
-//    private Collection<ChessMove> movesRook() {
-//        return true;
-//    }
-//
-//    private Collection<ChessMove> movesPawn() {
-//        return true;
-//    }
+    private void movesKnight(ChessBoard board, ChessPosition myPosition) {
+        search(board, myPosition, Direction.KLEFTUP, 1);
+        search(board, myPosition, Direction.KUPLEFT, 1);
+        search(board, myPosition, Direction.KUPRIGHT, 1);
+        search(board, myPosition, Direction.KRIGHTUP, 1);
+        search(board, myPosition, Direction.KRIGHTDOWN, 1);
+        search(board, myPosition, Direction.KDOWNRIGHT, 1);
+        search(board, myPosition, Direction.KDOWNLEFT, 1);
+        search(board, myPosition, Direction.KLEFTDOWN, 1);
+    }
+
+    private void movesRook(ChessBoard board, ChessPosition myPosition) {
+        search(board, myPosition, Direction.UP, 10);
+        search(board, myPosition, Direction.DOWN, 10);
+        search(board, myPosition, Direction.LEFT, 10);
+        search(board, myPosition, Direction.RIGHT, 10);
+    }
+
+    private void movesPawn(ChessBoard board, ChessPosition myPosition) {
+        if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (myPosition.getRow())
+        }
+
+        search(board, myPosition, Direction.UP, 1);
+        search(board, myPosition, Direction.DOWN, 1);
+        search(board, myPosition, Direction.LEFT, 1);
+        search(board, myPosition, Direction.RIGHT, 1);
+        search(board, myPosition, Direction.UPLEFT, 1);
+        search(board, myPosition, Direction.UPRIGHT, 1);
+        search(board, myPosition, Direction.DOWNLEFT, 1);
+        search(board, myPosition, Direction.DOWNRIGHT, 1);
+    }
 
     private void search(ChessBoard board, ChessPosition myPosition, ChessPiece.Direction direction, int numSearch) {
-
-        ChessPosition newPos = null;
-
         for (int i = 1; i < numSearch + 1; i++) {
-
-            switch (direction) {
-                case UP -> newPos = new ChessPosition(myPosition.getRow() + i + 1, myPosition.getColumn() + 1);
-                case DOWN -> newPos = new ChessPosition(myPosition.getRow() - i + 1, myPosition.getColumn() + 1);
-                case LEFT -> newPos = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - i + 1);
-                case RIGHT -> newPos = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + i + 1);
-                case UPLEFT -> newPos = new ChessPosition(myPosition.getRow() + i + 1, myPosition.getColumn() - i + 1);
-                case UPRIGHT -> newPos = new ChessPosition(myPosition.getRow() + i + 1, myPosition.getColumn() + i + 1);
-                case DOWNLEFT ->
-                        newPos = new ChessPosition(myPosition.getRow() - i + 1, myPosition.getColumn() - i + 1);
-                case DOWNRIGHT ->
-                        newPos = new ChessPosition(myPosition.getRow() - i + 1, myPosition.getColumn() + i + 1);
-                default ->
-                        throw new RuntimeException("Used Wrong Direction! Direction Entered: " + direction + " Expected Enum of ChessPiece.Direction");
-            }
-
+            ChessPosition newPos = handleOffSet(myPosition, direction, i);
             // Catch out of bounds queries
             if (
                     newPos.getRow() >= 0 &&
@@ -167,12 +171,46 @@ public class ChessPiece {
                             newPos.getRow() < 8 &&
                             newPos.getColumn() < 8
             ) {
-                // Catch piece collisions
+
+                // If nothing is there, then allow to move there
                 if (board.getPiece(newPos) == null) {
-                    this.movesPossible.add(new ChessMove(myPosition, newPos, this.type));
+                    this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
+                } else {
+                    // Catch piece collisions with the opposing team
+                    if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
+                        this.movesPossible.add(new ChessMove(myPosition, newPos, null));
+                    }
+                    return;
                 }
+            } else {
+                return; // If it is out of bounds, it should stop checking
             }
         }
+    }
+
+    private ChessPosition handleOffSet(ChessPosition myPosition, ChessPiece.Direction direction, int i) {
+        ChessPosition newPos;
+        switch (direction) {
+            case UP -> newPos = new ChessPosition(myPosition.getNiceRow() + i, myPosition.getNiceColumn());
+            case DOWN -> newPos = new ChessPosition(myPosition.getNiceRow() - i, myPosition.getNiceColumn());
+            case LEFT -> newPos = new ChessPosition(myPosition.getNiceRow(), myPosition.getNiceColumn() - i);
+            case RIGHT -> newPos = new ChessPosition(myPosition.getNiceRow(), myPosition.getNiceColumn() + i);
+            case UPLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() + i, myPosition.getNiceColumn() - i);
+            case UPRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() + i, myPosition.getNiceColumn() + i);
+            case DOWNLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() - i, myPosition.getNiceColumn() - i);
+            case DOWNRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() - i, myPosition.getNiceColumn() + i);
+            case KLEFTUP -> newPos = new ChessPosition(myPosition.getNiceRow() + 1, myPosition.getNiceColumn() - 2);
+            case KUPLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() + 2, myPosition.getNiceColumn() - 1);
+            case KUPRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() + 2, myPosition.getNiceColumn() + 1);
+            case KRIGHTUP -> newPos = new ChessPosition(myPosition.getNiceRow() + 1, myPosition.getNiceColumn() + 2);
+            case KRIGHTDOWN -> newPos = new ChessPosition(myPosition.getNiceRow() - 1, myPosition.getNiceColumn() + 2);
+            case KDOWNRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() - 2, myPosition.getNiceColumn() + 1);
+            case KDOWNLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() - 2, myPosition.getNiceColumn() - 1);
+            case KLEFTDOWN -> newPos = new ChessPosition(myPosition.getNiceRow() - 1, myPosition.getNiceColumn() - 2);
+            default ->
+                    throw new RuntimeException("Used Wrong Direction! Direction Entered: " + direction + " Expected Enum of ChessPiece.Direction");
+        }
+        return newPos;
 
     }
 
