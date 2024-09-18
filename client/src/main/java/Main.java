@@ -18,8 +18,12 @@ public class Main {
 
         ChessPiece currPiece = board.getPiece(currPos);
 
-        System.out.println(currPiece);
-        System.out.println(currPiece.pieceMoves(board, currPos));
+        board.resetBoard();
+
+        System.out.println(board);
+
+//        System.out.println(currPiece);
+//        System.out.println(currPiece.pieceMoves(board, currPos));
 
         System.out.println("Finished Program");
     }
