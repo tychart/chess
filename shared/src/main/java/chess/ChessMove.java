@@ -81,6 +81,7 @@ public class ChessMove {
             }
             outstr.append("\n" + i + " ");
         }
+        outstr.append(getPromotionPiece());
         outstr.append("\n");
         return outstr.toString();
     }

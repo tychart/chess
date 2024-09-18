@@ -148,22 +148,29 @@ public class ChessPiece {
 
     private void movesPawn(ChessBoard board, ChessPosition myPosition) {
         if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            if (myPosition.getRow())
+            if (myPosition.getNiceRow() == 2) {
+                search(board, myPosition, Direction.UP, 2);
+            } else {
+                search(board, myPosition, Direction.UP, 1);
+            }
+            search(board, myPosition, Direction.UPLEFT, 1);
+            search(board, myPosition, Direction.UPRIGHT, 1);
+        } else {
+            if (myPosition.getNiceRow() == 7) {
+                search(board, myPosition, Direction.DOWN, 2);
+            } else {
+                search(board, myPosition, Direction.DOWN, 1);
+            }
+            search(board, myPosition, Direction.DOWNLEFT, 1);
+            search(board, myPosition, Direction.DOWNRIGHT, 1);
         }
-
-        search(board, myPosition, Direction.UP, 1);
-        search(board, myPosition, Direction.DOWN, 1);
-        search(board, myPosition, Direction.LEFT, 1);
-        search(board, myPosition, Direction.RIGHT, 1);
-        search(board, myPosition, Direction.UPLEFT, 1);
-        search(board, myPosition, Direction.UPRIGHT, 1);
-        search(board, myPosition, Direction.DOWNLEFT, 1);
-        search(board, myPosition, Direction.DOWNRIGHT, 1);
     }
 
     private void search(ChessBoard board, ChessPosition myPosition, ChessPiece.Direction direction, int numSearch) {
         for (int i = 1; i < numSearch + 1; i++) {
             ChessPosition newPos = handleOffSet(myPosition, direction, i);
+            boolean flagPromotion = false;
+
             // Catch out of bounds queries
             if (
                     newPos.getRow() >= 0 &&
@@ -171,14 +178,60 @@ public class ChessPiece {
                             newPos.getRow() < 8 &&
                             newPos.getColumn() < 8
             ) {
+                if (this.getPieceType() == PieceType.PAWN) {
+                    if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        if (newPos.getNiceRow() == 8) {
+                            flagPromotion = true;
+                        }
+                    } else {
+                        if (newPos.getNiceRow() == 1) {
+                            flagPromotion = true;
+                        }
+                    }
+                }
 
                 // If nothing is there, then allow to move there
                 if (board.getPiece(newPos) == null) {
-                    this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
+
+                    // If the pawn is moving diagonally, we only want to record if it is capturing
+                    if (this.getPieceType() == PieceType.PAWN) {
+                        if (direction == Direction.UP || direction == Direction.DOWN) {
+                            if (flagPromotion) {
+                                for (int j = 0; j < 4; j++) {
+                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.QUEEN));
+                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.BISHOP));
+                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.KNIGHT));
+                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.ROOK));
+                                }
+                            } else {
+                                this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
+                            }
+                        }
+                    } else {
+                        this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
+                    }
+
+
                 } else {
+
                     // Catch piece collisions with the opposing team
                     if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
-                        this.movesPossible.add(new ChessMove(myPosition, newPos, null));
+                        if (this.getPieceType() == PieceType.PAWN) {
+                            if (direction != Direction.UP && direction != Direction.DOWN) {
+                                if (flagPromotion) {
+                                    for (int j = 0; j < 4; j++) {
+                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.QUEEN));
+                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.BISHOP));
+                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.KNIGHT));
+                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.ROOK));
+                                    }
+                                } else {
+                                    this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
+                                }
+                            }
+                        } else {
+                            this.movesPossible.add(new ChessMove(myPosition, newPos, null));
+                        }
                     }
                     return;
                 }
