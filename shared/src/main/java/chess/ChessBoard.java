@@ -31,6 +31,17 @@ public class ChessBoard {
         squares[position.getRow()][position.getColumn()] = piece;
     }
 
+    public ChessPiece removePiece(ChessPosition position) {
+        ChessPiece removedPiece = squares[position.getRow()][position.getColumn()];
+        squares[position.getRow()][position.getColumn()] = null;
+        return removedPiece;
+    }
+
+    public void movePiece(ChessMove move) {
+        ChessPiece currPiece = this.squares[move.getStartPosition().getRow()][move.getStartPosition().getColumn()];
+        removePiece();
+    }
+
     /**
      * Gets a chess piece on the chessboard
      *
@@ -41,6 +52,7 @@ public class ChessBoard {
     public ChessPiece getPiece(ChessPosition position) {
         return squares[position.getRow()][position.getColumn()];
     }
+
 
     /**
      * Sets the board to the default starting board
@@ -86,7 +98,7 @@ public class ChessBoard {
             for (int j = 0; j < squares[i].length; j++) {
                 if (squares[i][j] != null) {
                     if (squares[i][j].getTeamColor() == teamColor) {
-                        pieces.add(squares[i][j]);
+                        pieces.put(squares[i][j], new ChessPosition(i, j));
                     }
                 }
             }

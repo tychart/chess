@@ -14,7 +14,7 @@ public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
-    Collection<ChessMove> movesPossible = new HashSet<>();
+    private Collection<ChessMove> movesPossible = new HashSet<>();
 
     public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
 

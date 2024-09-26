@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public class ChessGame {
 
-    TeamColor currTurn;
-    ChessBoard board;
+    private TeamColor currTurn;
+    private ChessBoard board;
 
     public ChessGame() {
 
@@ -55,8 +55,13 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        ChessPiece currPiece = this.getBoard().getPiece(startPosition);
         Collection<ChessMove> validMoves = new HashSet<ChessMove>();
-        ChessPiece currPiece = board.getPiece(startPosition);
+        Collection<ChessMove> allMoves = currPiece.pieceMoves(this.getBoard(), startPosition);
+
+        for (ChessMove currMove : allMoves) {
+
+        }
 
 
     }
@@ -78,16 +83,20 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        Map<ChessPiece, ChessPosition> teamPieces = this.getBoard().getAllTeamPieces(teamColor);
+        return willLeadToCheck(this.getBoard(), teamColor);
+    }
+
+    // Given a board, is the king in check?
+    private boolean willLeadToCheck(ChessBoard currBoard, TeamColor teamColor) {
+        Map<ChessPiece, ChessPosition> teamPieces = currBoard.getAllTeamPieces(teamColor);
         HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
         HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
-        ChessPosition kingPosition = this.getBoard().getKingPosition(teamColor);
-
+        ChessPosition kingPosition = currBoard.getKingPosition(teamColor);
 
         for (Map.Entry<ChessPiece, ChessPosition> entry : teamPieces.entrySet()) {
             ChessPiece piece = entry.getKey();
             ChessPosition position = entry.getValue();
-            allMoves.addAll(piece.pieceMoves(this.getBoard(), position));
+            allMoves.addAll(piece.pieceMoves(currBoard, position));
         }
 
         for (ChessMove move : allMoves) {
