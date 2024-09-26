@@ -1,7 +1,11 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -72,6 +76,35 @@ public class ChessBoard {
         for (int i = 1; i <= 8; i++) {
             addPiece(new ChessPosition(frontRow, i), new ChessPiece(color, ChessPiece.PieceType.PAWN));
         }
+    }
+
+    public Map<ChessPiece, ChessPosition> getAllTeamPieces(ChessGame.TeamColor teamColor) {
+        Map<ChessPiece, ChessPosition> pieces = new HashMap<>();
+
+
+        for (int i = squares.length - 1; i >= 0; i--) {
+            for (int j = 0; j < squares[i].length; j++) {
+                if (squares[i][j] != null) {
+                    if (squares[i][j].getTeamColor() == teamColor) {
+                        pieces.add(squares[i][j]);
+                    }
+                }
+            }
+        }
+        return pieces;
+    }
+
+    public ChessPosition getKingPosition(ChessGame.TeamColor teamColor) {
+        for (int i = squares.length - 1; i >= 0; i--) {
+            for (int j = 0; j < squares[i].length; j++) {
+                if (squares[i][j] != null) {
+                    if (squares[i][j].getTeamColor() == teamColor && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
+                        return new ChessPosition(i, j);
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("No King?");
     }
 
     @Override

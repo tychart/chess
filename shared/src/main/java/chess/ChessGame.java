@@ -1,6 +1,8 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -53,7 +55,10 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> validMoves = new HashSet<ChessMove>();
+        ChessPiece currPiece = board.getPiece(startPosition);
+
+
     }
 
     /**
@@ -73,8 +78,25 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        Map<ChessPiece, ChessPosition> teamPieces = this.getBoard().getAllTeamPieces(teamColor);
+        HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
+        HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
+        ChessPosition kingPosition = this.getBoard().getKingPosition(teamColor);
+
+
+        for (Map.Entry<ChessPiece, ChessPosition> entry : teamPieces.entrySet()) {
+            ChessPiece piece = entry.getKey();
+            ChessPosition position = entry.getValue();
+            allMoves.addAll(piece.pieceMoves(this.getBoard(), position));
+        }
+
+        for (ChessMove move : allMoves) {
+            allEndPositions.add(move.getEndPosition());
+        }
+
+        return allEndPositions.contains(kingPosition);
     }
+
 
     /**
      * Determines if the given team is in checkmate
@@ -103,7 +125,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
