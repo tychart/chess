@@ -10,7 +10,14 @@ import java.util.Collection;
  */
 public class ChessGame {
 
+    TeamColor currTurn;
+    ChessBoard board;
+
     public ChessGame() {
+
+        currTurn = TeamColor.WHITE;
+        board = new ChessBoard();
+        board.resetBoard();
 
     }
 
@@ -18,7 +25,7 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return currTurn;
     }
 
     /**
@@ -27,7 +34,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        currTurn = team;
     }
 
     /**
