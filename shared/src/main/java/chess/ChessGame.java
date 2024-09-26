@@ -60,7 +60,7 @@ public class ChessGame {
         Collection<ChessMove> allMoves = currPiece.pieceMoves(this.getBoard(), startPosition);
 
         for (ChessMove currMove : allMoves) {
-
+            ChessBoard currPotentalBoard = new ChessBoard(this.getBoard());
         }
 
 

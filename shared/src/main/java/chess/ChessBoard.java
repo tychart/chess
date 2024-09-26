@@ -21,6 +21,11 @@ public class ChessBoard {
         this.squares = new ChessPiece[8][8];
     }
 
+    // Make a copy constructor
+    public ChessBoard() {
+        this.squares = new ChessPiece[8][8];
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -37,9 +42,10 @@ public class ChessBoard {
         return removedPiece;
     }
 
-    public void movePiece(ChessMove move) {
-        ChessPiece currPiece = this.squares[move.getStartPosition().getRow()][move.getStartPosition().getColumn()];
-        removePiece();
+    // This is specifically for moving pieces when testing configurations for potential moves
+    public void unsafeMovePiece(ChessMove move) {
+        ChessPiece currPiece = removePiece(move.getStartPosition());
+        addPiece(move.getEndPosition(), currPiece);
     }
 
     /**
