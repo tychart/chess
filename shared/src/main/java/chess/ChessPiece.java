@@ -23,6 +23,13 @@ public class ChessPiece {
 
     }
 
+    // Copy constructor
+    public ChessPiece(ChessPiece other) {
+        this.pieceColor = other.pieceColor;
+        this.type = other.type;
+        this.movesPossible = new HashSet<>(other.movesPossible);
+    }
+
     /**
      * The various different chess piece options
      */

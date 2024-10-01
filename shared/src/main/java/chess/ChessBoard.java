@@ -21,9 +21,16 @@ public class ChessBoard {
         this.squares = new ChessPiece[8][8];
     }
 
-    // Make a copy constructor
-    public ChessBoard() {
+    // Copy constructor
+    public ChessBoard(ChessBoard other) {
         this.squares = new ChessPiece[8][8];
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (other.squares[i][j] != null) {
+                    this.squares[i][j] = new ChessPiece(other.squares[i][j]);
+                }
+            }
+        }
     }
 
     /**
@@ -110,6 +117,28 @@ public class ChessBoard {
             }
         }
         return pieces;
+    }
+
+
+    // Given a team color, is that king in check?
+    public boolean king_in_check(ChessGame.TeamColor teamColor) {
+        ChessGame.TeamColor opponentTeamColor = ChessGame.getOpposingTeamColor(teamColor);
+        Map<ChessPiece, ChessPosition> opponentPieces = this.getAllTeamPieces(opponentTeamColor);
+        HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
+        HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
+        ChessPosition kingPosition = this.getKingPosition(teamColor);
+
+        for (Map.Entry<ChessPiece, ChessPosition> entry : opponentPieces.entrySet()) {
+            ChessPiece piece = entry.getKey();
+            ChessPosition position = entry.getValue();
+            allMoves.addAll(piece.pieceMoves(this, position));
+        }
+
+        for (ChessMove move : allMoves) {
+            allEndPositions.add(move.getEndPosition());
+        }
+
+        return allEndPositions.contains(kingPosition);
     }
 
     public ChessPosition getKingPosition(ChessGame.TeamColor teamColor) {

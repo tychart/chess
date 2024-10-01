@@ -47,6 +47,10 @@ public class ChessGame {
         BLACK
     }
 
+    public static TeamColor getOpposingTeamColor(TeamColor teamColor) {
+        return teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+    }
+
     /**
      * Gets a valid moves for a piece at the given location
      *
@@ -56,14 +60,26 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece currPiece = this.getBoard().getPiece(startPosition);
+
+        if (currPiece == null) {
+            return null;
+        }
+
         Collection<ChessMove> validMoves = new HashSet<ChessMove>();
         Collection<ChessMove> allMoves = currPiece.pieceMoves(this.getBoard(), startPosition);
 
+
         for (ChessMove currMove : allMoves) {
-            ChessBoard currPotentalBoard = new ChessBoard(this.getBoard());
+            ChessBoard currPotentialBoard = new ChessBoard(this.getBoard());
+            currPotentialBoard.unsafeMovePiece(currMove);
+
+            // Make sure the current player's king does not become in check after that move is made
+            if (!currPotentialBoard.king_in_check(this.getTeamTurn())) {
+                validMoves.add(currMove);
+            }
         }
 
-
+        return validMoves;
     }
 
     /**
@@ -73,7 +89,17 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        // Get the valid moves for the piece at the start position of the move
+        Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
+
+        // Check if the move is in the set of valid moves
+        if (validMoves != null && validMoves.contains(move)) {
+            // Perform the move
+            this.getBoard().unsafeMovePiece(move);
+        } else {
+            // Throw an exception if the move is invalid
+            throw new InvalidMoveException("Invalid move: " + move);
+        }
     }
 
     /**
@@ -83,28 +109,28 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return willLeadToCheck(this.getBoard(), teamColor);
+        return this.getBoard().king_in_check(teamColor);
     }
 
-    // Given a board, is the king in check?
-    private boolean willLeadToCheck(ChessBoard currBoard, TeamColor teamColor) {
-        Map<ChessPiece, ChessPosition> teamPieces = currBoard.getAllTeamPieces(teamColor);
-        HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
-        HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
-        ChessPosition kingPosition = currBoard.getKingPosition(teamColor);
-
-        for (Map.Entry<ChessPiece, ChessPosition> entry : teamPieces.entrySet()) {
-            ChessPiece piece = entry.getKey();
-            ChessPosition position = entry.getValue();
-            allMoves.addAll(piece.pieceMoves(currBoard, position));
-        }
-
-        for (ChessMove move : allMoves) {
-            allEndPositions.add(move.getEndPosition());
-        }
-
-        return allEndPositions.contains(kingPosition);
-    }
+//    // Given a board, is the king in check?
+//    private boolean willLeadToCheck(ChessBoard currBoard, TeamColor teamColor) {
+//        Map<ChessPiece, ChessPosition> teamPieces = currBoard.getAllTeamPieces(teamColor);
+//        HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
+//        HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
+//        ChessPosition kingPosition = currBoard.getKingPosition(teamColor);
+//
+//        for (Map.Entry<ChessPiece, ChessPosition> entry : teamPieces.entrySet()) {
+//            ChessPiece piece = entry.getKey();
+//            ChessPosition position = entry.getValue();
+//            allMoves.addAll(piece.pieceMoves(currBoard, position));
+//        }
+//
+//        for (ChessMove move : allMoves) {
+//            allEndPositions.add(move.getEndPosition());
+//        }
+//
+//        return allEndPositions.contains(kingPosition);
+//    }
 
 
     /**
