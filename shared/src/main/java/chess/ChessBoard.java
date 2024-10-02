@@ -103,34 +103,33 @@ public class ChessBoard {
         }
     }
 
-    public Map<ChessPiece, ChessPosition> getAllTeamPieces(ChessGame.TeamColor teamColor) {
-        Map<ChessPiece, ChessPosition> pieces = new HashMap<>();
+    public HashSet<ChessPosition> getAllTeamPieces(ChessGame.TeamColor teamColor) {
+        HashSet<ChessPosition> positions = new HashSet<>();
 
 
         for (int i = squares.length - 1; i >= 0; i--) {
             for (int j = 0; j < squares[i].length; j++) {
                 if (squares[i][j] != null) {
                     if (squares[i][j].getTeamColor() == teamColor) {
-                        pieces.put(squares[i][j], new ChessPosition(i, j));
+                        positions.add(new ChessPosition(i + 1, j + 1));
                     }
                 }
             }
         }
-        return pieces;
+        return positions;
     }
 
 
     // Given a team color, is that king in check?
     public boolean king_in_check(ChessGame.TeamColor teamColor) {
         ChessGame.TeamColor opponentTeamColor = ChessGame.getOpposingTeamColor(teamColor);
-        Map<ChessPiece, ChessPosition> opponentPieces = this.getAllTeamPieces(opponentTeamColor);
+        HashSet<ChessPosition> opponentPieces = this.getAllTeamPieces(opponentTeamColor);
         HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
         HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
         ChessPosition kingPosition = this.getKingPosition(teamColor);
 
-        for (Map.Entry<ChessPiece, ChessPosition> entry : opponentPieces.entrySet()) {
-            ChessPiece piece = entry.getKey();
-            ChessPosition position = entry.getValue();
+        for (ChessPosition position : opponentPieces) {
+            ChessPiece piece = this.getPiece(position);
             allMoves.addAll(piece.pieceMoves(this, position));
         }
 
@@ -146,7 +145,7 @@ public class ChessBoard {
             for (int j = 0; j < squares[i].length; j++) {
                 if (squares[i][j] != null) {
                     if (squares[i][j].getTeamColor() == teamColor && squares[i][j].getPieceType() == ChessPiece.PieceType.KING) {
-                        return new ChessPosition(i, j);
+                        return new ChessPosition(i + 1, j + 1);
                     }
                 }
             }

@@ -74,7 +74,7 @@ public class ChessGame {
             currPotentialBoard.unsafeMovePiece(currMove);
 
             // Make sure the current player's king does not become in check after that move is made
-            if (!currPotentialBoard.king_in_check(this.getTeamTurn())) {
+            if (!currPotentialBoard.king_in_check(currPiece.getTeamColor())) {
                 validMoves.add(currMove);
             }
         }
@@ -89,11 +89,17 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (this.getBoard().getPiece(move.getStartPosition()) == null || this.getBoard().getPiece(move.getStartPosition()).getTeamColor() != this.getTeamTurn()) {
+            // Throw an exception if the piece doesn't exist or is not the player's piece
+            throw new InvalidMoveException("Invalid move: " + move);
+        }
+
         // Get the valid moves for the piece at the start position of the move
         Collection<ChessMove> validMoves = validMoves(move.getStartPosition());
 
         // Check if the move is in the set of valid moves
         if (validMoves != null && validMoves.contains(move)) {
+
             // Perform the move
             this.getBoard().unsafeMovePiece(move);
         } else {
@@ -169,6 +175,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return this.board;
     }
 }
