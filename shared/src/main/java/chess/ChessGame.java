@@ -109,6 +109,8 @@ public class ChessGame {
             // Throw an exception if the move is invalid
             throw new InvalidMoveException("Invalid move: " + move);
         }
+        // Switch turns after making a move
+        setTeamTurn(getOpposingTeamColor(getTeamTurn()));
     }
 
     /**
@@ -149,7 +151,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return tryEveryPosition(teamColor, true);
     }
 
     /**
@@ -160,7 +162,39 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return tryEveryPosition(teamColor, false);
+    }
+
+    private boolean tryEveryPosition(TeamColor teamColor, boolean check_current) {
+//        ChessGame.TeamColor opponentTeamColor = ChessGame.getOpposingTeamColor(teamColor);
+        HashSet<ChessPosition> opponentPieces = getBoard().getAllTeamPieces(teamColor);
+        HashSet<ChessMove> allMoves = new HashSet<>();
+
+
+        for (ChessPosition position : opponentPieces) {
+            allMoves.addAll(validMoves(position));
+        }
+
+        for (ChessMove currMove : allMoves) {
+            ChessBoard currPotentialBoard = new ChessBoard(this.getBoard());
+            currPotentialBoard.unsafeMovePiece(currMove);
+
+            // Make sure the current player's king does not become in check after that move is made
+            if (!currPotentialBoard.king_in_check(this.getTeamTurn())) {
+                return false;
+            }
+        }
+
+        // If checking for checkmate rather than stalemate, also check to see if in check
+        // If checking for stalemate, then do not return true if there is a checkmate
+        if (check_current) {
+            return this.getBoard().king_in_check(this.getTeamTurn());
+        } else if (this.getBoard().king_in_check(this.getTeamTurn())) {
+            return false;
+        }
+
+
+        return true;
     }
 
     /**
