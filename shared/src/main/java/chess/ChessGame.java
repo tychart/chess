@@ -89,7 +89,10 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        if (this.getBoard().getPiece(move.getStartPosition()) == null || this.getBoard().getPiece(move.getStartPosition()).getTeamColor() != this.getTeamTurn()) {
+        if (
+                this.getBoard().getPiece(move.getStartPosition()) == null ||
+                        this.getBoard().getPiece(move.getStartPosition()).getTeamColor() != this.getTeamTurn()
+        ) {
             // Throw an exception if the piece doesn't exist or is not the player's piece
             throw new InvalidMoveException("Invalid move: " + move);
         }

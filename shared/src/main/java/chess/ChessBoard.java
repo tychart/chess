@@ -52,7 +52,15 @@ public class ChessBoard {
     // This is specifically for moving pieces when testing configurations for potential moves
     public void unsafeMovePiece(ChessMove move) {
         ChessPiece currPiece = removePiece(move.getStartPosition());
-        addPiece(move.getEndPosition(), currPiece);
+
+        // For Pawns
+        if (move.getPromotionPiece() != null && move.getPromotionPiece() != currPiece.getPieceType()) {
+            addPiece(move.getEndPosition(), new ChessPiece(currPiece.getTeamColor(), move.getPromotionPiece()));
+        } else {
+            addPiece(move.getEndPosition(), currPiece);
+        }
+
+
     }
 
     /**
@@ -126,7 +134,16 @@ public class ChessBoard {
         HashSet<ChessPosition> opponentPieces = this.getAllTeamPieces(opponentTeamColor);
         HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
         HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
-        ChessPosition kingPosition = this.getKingPosition(teamColor);
+        ChessPosition kingPosition;
+
+        // For test cases that don't include a king on the board
+        try {
+            kingPosition = this.getKingPosition(teamColor);
+        } catch (RuntimeException e) {
+            System.out.println("There is no king detected, so king in check will not be evaluated");
+            return false;
+        }
+
 
         for (ChessPosition position : opponentPieces) {
             ChessPiece piece = this.getPiece(position);
