@@ -1,0 +1,28 @@
+title Register (Success)
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+
+User->Handler: POST (username, password, email)
+Handler->Service: Register(username, password, email)
+Service->DataAccess: getUser(username)
+DataAccess->Database: getUserData(username)
+
+Database->DataAccess: null
+DataAccess->Service: null
+Service->DataAccess: createUser(userData)
+DataAccess->Database: addUser(userData)
+Service->Service: generateToken(authData)
+Service->Handler: returnToken(username, authToken)
+Service->DataAccess: storeToken(username, token)
+DataAccess->Database: storeToken(username, token)
+
+Handler->User: 200 (username, authToken)

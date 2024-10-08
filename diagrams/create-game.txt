@@ -1,0 +1,31 @@
+title Create Game
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+
+User->Handler: /create-game POST (authToken)
+Handler->Service: createGame(authToken)
+Service->DataAccess: authenticateUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: invalidToken("Please Login Again")
+Handler-->User: return 500 Invalid Token, \nPlease Login Again
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Service: startNewGame(userData)
+Service->Handler: returnNewGameData()
+Handler->User: return 200 (Started game (Data))
+

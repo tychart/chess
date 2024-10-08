@@ -1,0 +1,27 @@
+title Login (Successful)
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+
+User->Handler: /login POST (username, password)
+Handler->Service: login(username, password)
+Service->DataAccess: getUser(username)
+DataAccess->Database: getUserData(username)
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Service: password = userData.password
+Service->Service: generateToken(userData)
+Service->Handler: returnToken(username, authToken)
+Service->DataAccess: storeToken(username, token)
+DataAccess->Database: storeToken(username, token)
+
+Handler->User: 200 (username, authToken)

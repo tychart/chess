@@ -1,0 +1,33 @@
+title Logout (Success)
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+
+User->Handler: /logout POST (authToken)
+Handler->Service: logout(authToken)
+Service->DataAccess: logoutUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: sendLogoutMessage("Already Logged Out!")
+Handler-->User: return 200 Already Logged Out!
+
+Database->DataAccess: userData
+DataAccess->DataAccess: removeToken(userData)
+DataAccess->Database: overWriteItem(userData)
+
+DataAccess->Service: sendLogoutMessage("Logged Out!")
+Service->Handler: sendLogoutMessage("Logged Out!")
+Handler->User: return 200 Logged Out!
+

@@ -1,0 +1,23 @@
+title Register (Username Taken)
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+
+User->Handler: POST (username, password, email)
+Handler->Service: Register(username, password, email)
+Service->DataAccess: getUser(username)
+DataAccess->Database: getUserData(username)
+
+Database->DataAccess: error: username exists, \nPlease sign in, or choose\ndiffrent username
+DataAccess->Service: error: username exists, \nPlease sign in, or choose\ndiffrent username
+Service->Handler: error: username exists, \nPlease sign in, or choose\ndiffrent username
+Handler->User:500 error: username exists, \nPlease sign in, or choose\ndiffrent username
+

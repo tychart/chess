@@ -1,0 +1,30 @@
+title List Games
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+
+User->Handler: /list-games POST (authToken)
+Handler->Service: listGames(authToken)
+Service->DataAccess: authenticateUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: invalidToken("Please Login Again")
+Handler-->User: return 500 Please Login Again
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Handler: returnGameList()
+Handler->User: return 200 (gamelist)
+
