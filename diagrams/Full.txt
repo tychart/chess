@@ -1,0 +1,141 @@
+title Chess Connection Flow
+
+actor User
+
+participantgroup #lightblue Server
+participant Handler
+participant Service
+participant DataAccess
+end
+
+database Database
+
+group #navy Registration #white
+User->Handler: POST (username, password, email)
+Handler->Service: Register(username, password, email)
+Service->DataAccess: getUser(username)
+DataAccess->Database: getUserData(username)
+
+Database-->DataAccess: error: username exists, \nPlease sign in, or choose\ndiffrent username
+DataAccess-->Service: error: username exists, \nPlease sign in, or choose\ndiffrent username
+Service-->Handler: error: username exists, \nPlease sign in, or choose\ndiffrent username
+Handler-->User:500 error: username exists, \nPlease sign in, or choose\ndiffrent username
+
+Database->DataAccess: null
+DataAccess->Service: null
+Service->DataAccess: createUser(userData)
+DataAccess->Database: addUser(userData)
+Service->Service: generateToken(authData)
+Service->Handler: returnToken(username, authToken)
+Service->DataAccess: storeToken(username, token)
+DataAccess->Database: storeToken(username, token)
+Handler->User: 200 (username, authToken)
+end
+
+group #orange Login #white
+User->Handler: [POST] /session\n{username, password}
+Handler->Service: login(username, password)
+Service->DataAccess: getUser(username)
+DataAccess->Database: getUserData(username)
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Service: password = userData.password
+Service->Service: generateToken(userData)
+Service->Handler: returnToken(username, authToken)
+Service->DataAccess: storeToken(username, token)
+DataAccess->Database: storeToken(username, token)
+
+Handler->User: 200 (username, authToken)
+end
+
+group #green Logout #white
+User->Handler: [DELETE] /session\nauthToken
+Handler->Service: logout(authToken)
+Service->DataAccess: logoutUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: sendLogoutMessage("Already Logged Out!")
+Handler-->User: return 200 Already Logged Out!
+
+Database->DataAccess: userData
+DataAccess->DataAccess: removeToken(userData)
+DataAccess->Database: overWriteItem(userData)
+
+DataAccess->Service: sendLogoutMessage("Logged Out!")
+Service->Handler: sendLogoutMessage("Logged Out!")
+Handler->User: return 200 Logged Out!
+end
+
+group #red List Games #white
+User->Handler: [GET] /game\nauthToken
+Handler->Service: listGames(authToken)
+Service->DataAccess: authenticateUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: invalidToken("Please Login Again")
+Handler-->User: return 500 Please Login Again
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Handler: returnGameList()
+Handler->User: return 200 (gamelist)
+end
+
+group #purple Create Game #white
+User->Handler: [POST] /game\nauthToken\n{gameName}
+Handler->Service: createGame(authToken)
+Service->DataAccess: authenticateUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: invalidToken("Please Login Again")
+Handler-->User: return 500 Invalid Token, \nPlease Login Again
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Service: startNewGame(userData)
+Service->Handler: returnNewGameData()
+Handler->User: return 200 (Started game (Data))
+end
+
+group #yellow Join Game #black
+User->Handler: /join-game POST (authToken, gameId)
+Handler->Service: joinGame(authToken, gameId
+Service->DataAccess: authenticateUser(authToken)
+DataAccess->Database: getUserByToken(authToken)
+
+Database-->DataAccess: null
+DataAccess-->Service: Invalid Token
+Service-->Handler: invalidToken("Please Login Again")
+Handler-->User: return 500 Invalid Token, \nPlease Login Again
+
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Service: joinGame(gameId)
+Service->Handler: returnGameData()
+Handler->User: return 200 (Joined game (Data))
+end
+
+group #gray Clear application #white
+User->Handler: [DELETE] /db (adminUsername, password)
+Handler->Service: deleteDatabase(username, password)
+Service->DataAccess: authenticate(username, password)
+DataAccess->Database: getUserData(username)
+Database->DataAccess: userData
+DataAccess->Service: userData
+Service->Service: password = userData.password
+Service->DataAccess: deleteDatabase(username, password)
+DataAccess->Database: deleteDatabase(username, password)
+Service->Handler: return 200 (deleted database)
+Handler->User: return 200 (deleted database)
+end
+
+
