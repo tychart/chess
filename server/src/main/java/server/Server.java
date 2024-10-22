@@ -38,6 +38,7 @@ public class Server {
 
         Spark.post("/user", this::createUser);
         Spark.post("/session", this::loginUser);
+        Spark.delete("/session", this::logoutUser);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -54,13 +55,11 @@ public class Server {
     private String createUser(Request req, Response res) {
         try {
             UserData newUser = gson.fromJson(req.body(), UserData.class);
-            String returnJson = service.registerUser(newUser);
-            System.out.println(returnJson);
-            return returnJson;
+            return service.registerUser(newUser);
         } catch (ServiceException e) {
             res.status(403);
             return gson.toJson(new ErrorResponse(e.getMessage()));
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             res.status(400);
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
@@ -69,11 +68,32 @@ public class Server {
     private String loginUser(Request req, Response res) {
         try {
             UserData newLogin = gson.fromJson(req.body(), UserData.class);
-            return service.loginUser(newLogin);
+            String jsonReturn = service.loginUser(newLogin);
+            res.type("application/json");
+//            System.out.println("jsonReturn: " + jsonReturn);
+            return jsonReturn;
         } catch (ServiceException e) {
-            res.status(403);
+            res.status(401);
+            return gson.toJson(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            System.out.println("IT GOT HERE, SOMETHING WENT VERY WRONG");
+            res.status(400);
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
+    }
+
+    private String logoutUser(Request req, Response res) {
+        try {
+            // Extract the authToken from the request headers
+            String authToken = req.headers("authorization");
+            return service.logoutUser(authToken);
+        } catch (IllegalArgumentException e) {
+            res.status(401);
+            return gson.toJson(new ErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+//        return "";
     }
 
 

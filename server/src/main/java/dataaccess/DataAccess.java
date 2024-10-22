@@ -12,4 +12,7 @@ public interface DataAccess {
 
     // Get a user by their username
     UserData getUser(String username);
+
+    // Used for loging out a user
+    void deleteAuthToken(String authToken);
 }

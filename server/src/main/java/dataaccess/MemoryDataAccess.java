@@ -27,4 +27,15 @@ public class MemoryDataAccess implements DataAccess {
     public UserData getUser(String username) {
         return users.get(username);
     }
+
+    @Override
+    public void deleteAuthToken(String authToken) {
+        for (UserData user : users.values()) {
+            if (user.getAuthToken().equals(authToken)) {
+                user.setAuthToken("");
+                break;
+            }
+        }
+        throw new IllegalArgumentException("Error: Provided authToken not found in the database, unauthorized");
+    }
 }

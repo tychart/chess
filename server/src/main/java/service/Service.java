@@ -22,8 +22,15 @@ public class Service {
     }
 
     public String registerUser(UserData newUser) throws ServiceException {
+        if (newUser.getUsername() == null ||
+                newUser.getPassword() == null ||
+                newUser.getEmail() == null
+        ) {
+            throw new IllegalArgumentException("Error: Missing vital signup information, please fill out all fields");
+        }
+
         if (dataAccess.getUser(newUser.getUsername()) != null) {
-            throw new ServiceException("User already exists");
+            throw new ServiceException("Error: User already exists");
         }
 
         dataAccess.addUser(newUser);
@@ -31,7 +38,7 @@ public class Service {
         Map<String, Object> returnData = new HashMap<>();
 
         returnData.put("username", newUser.getUsername());
-        returnData.put("token", generateAuthToken());
+        returnData.put("authToken", generateAuthToken());
 
         // Return a JSON response with username and authToken
         return gson.toJson(returnData);
@@ -39,7 +46,7 @@ public class Service {
 
     public String loginUser(UserData loginUser) throws ServiceException {
         if (dataAccess.getUser(loginUser.getUsername()) == null || !dataAccess.getUser(loginUser.getUsername()).getPassword().equals(loginUser.getPassword())) {
-            throw new ServiceException("Invalid username or password");
+            throw new ServiceException("Error: Invalid username or password");
         }
 
         loginUser.setAuthToken(generateAuthToken());
@@ -49,11 +56,16 @@ public class Service {
         Map<String, Object> returnData = new HashMap<>();
 
         returnData.put("username", loginUser.getUsername());
-        returnData.put("token", generateAuthToken());
+        returnData.put("authToken", generateAuthToken());
 
         // Return a JSON response with username and authToken
         return gson.toJson(returnData);
 
+    }
+
+    public String logoutUser(String authToken) throws ServiceException {
+        dataAccess.deleteAuthToken(authToken);
+        return "";
     }
 
     private String generateAuthToken() {
