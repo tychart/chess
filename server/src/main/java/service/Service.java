@@ -65,7 +65,7 @@ public class Service {
 
     public String logoutUser(String authToken) throws ServiceException {
         dataAccess.deleteAuthToken(authToken);
-        return "";
+        return "{}";
     }
 
     private String generateAuthToken() {
