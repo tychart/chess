@@ -21,6 +21,11 @@ public class Service {
         this.dataAccess = dataAccess;
     }
 
+    public String clearDatabase() {
+        dataAccess.clearDatabase();
+        return "{}";
+    }
+
     public String registerUser(UserData newUser) throws ServiceException {
         if (newUser.getUsername() == null ||
                 newUser.getPassword() == null ||
@@ -66,6 +71,10 @@ public class Service {
     public String logoutUser(String authToken) throws ServiceException {
         dataAccess.deleteAuthToken(authToken);
         return "{}";
+    }
+
+    public Map<String, UserData> getAllUsers() {
+        return dataAccess.getAllUsers();
     }
 
     private String generateAuthToken() {

@@ -32,9 +32,8 @@ public class Server {
 //            return "Hello, world!";
 //        });
 
-        Spark.delete("/db", (req, res) -> {
-            return "{}";
-        });
+        Spark.delete("/db", this::clearDatabase);
+        ;
 
         Spark.post("/user", this::createUser);
         Spark.post("/session", this::loginUser);
@@ -50,6 +49,10 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    private String clearDatabase(Request req, Response res) {
+        return service.clearDatabase();
     }
 
     private String createUser(Request req, Response res) {

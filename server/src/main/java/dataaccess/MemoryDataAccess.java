@@ -29,6 +29,11 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public Map<String, UserData> getAllUsers() {
+        return users;
+    }
+
+    @Override
     public void deleteAuthToken(String authToken) {
         for (UserData user : users.values()) {
             if (user.getAuthToken().equals(authToken)) {
@@ -37,5 +42,10 @@ public class MemoryDataAccess implements DataAccess {
             }
         }
         throw new IllegalArgumentException("Error: Provided authToken not found in the database, unauthorized");
+    }
+
+    @Override
+    public void clearDatabase() {
+        users = new HashMap<>();
     }
 }

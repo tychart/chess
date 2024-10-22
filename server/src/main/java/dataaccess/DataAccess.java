@@ -2,6 +2,8 @@ package dataaccess;
 
 import server.UserData;
 
+import java.util.Map;
+
 public interface DataAccess {
 
     // Add a new user to the database
@@ -13,6 +15,10 @@ public interface DataAccess {
     // Get a user by their username
     UserData getUser(String username);
 
+    Map<String, UserData> getAllUsers();
+
     // Used for loging out a user
     void deleteAuthToken(String authToken);
+
+    void clearDatabase();
 }
