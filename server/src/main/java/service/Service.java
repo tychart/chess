@@ -87,14 +87,17 @@ public class Service {
         return dataAccess.getAllUsers();
     }
 
-    public String createGame(String authToken) throws ServiceException {
+    public String createGame(String authToken, String gameName) throws ServiceException {
         UserData currUser = dataAccess.authenticateUser(authToken);
 
         ChessGame game = new ChessGame();
+        int gameID = dataAccess.getNextGameID();
+        GameData gameData = new GameData(gameID, currUser.username(), null, gameName, game);
 
-        dataAccess.
 
-        return "";
+        dataAccess.addGame(gameData);
+
+        return gson.toJson(new GameIDResponse(gameID));
     }
 
 

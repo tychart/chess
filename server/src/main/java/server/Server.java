@@ -104,11 +104,14 @@ public class Server {
     private String createGame(Request req, Response res) {
         try {
             String authToken = req.headers("authorization");
-            return service.createGame(authToken);
-        } catch (ServiceException e) {
+            GameRequest gameRequest = gson.fromJson(req.body(), GameRequest.class);
+            String gameName = gameRequest.gameName();
 
+            return service.createGame(authToken, gameName);
+        } catch (ServiceException e) {
+            res.status(401);
+            return gson.toJson(new ErrorResponse(e.getMessage()));
         }
-        return "";
     }
 
 

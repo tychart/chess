@@ -10,11 +10,12 @@ public class MemoryDataAccess implements DataAccess {
 
     private Map<String, UserData> users;
     private Map<String, AuthData> authDataTable;
-    private Map<String, AuthData> gameDataTable;
+    private Map<Integer, GameData> gameDataTable;
 
     public MemoryDataAccess() {
         users = new HashMap<>();
         authDataTable = new HashMap<>();
+        gameDataTable = new HashMap<>();
     }
 
     @Override
@@ -75,13 +76,23 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData addGame(GameData gameData) {
+    public int getNextGameID() {
+        int newID = 1;
+        while (gameDataTable.containsKey(newID)) {
+            newID++;
+        }
+        return newID;
+    }
 
+    @Override
+    public void addGame(GameData gameData) {
+        this.gameDataTable.put(gameData.gameID(), gameData);
     }
 
     @Override
     public void clearDatabase() {
         users.clear();
         authDataTable.clear();
+        gameDataTable.clear();
     }
 }

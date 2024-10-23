@@ -110,42 +110,5 @@ public class ServiceTest {
         assertThrows(ServiceException.class, () -> service.logoutUser("invalid_auth_token"));
     }
 
-//    @Test
-//    void listPets() throws ResponseException {
-//        List<Pet> expected = new ArrayList<>();
-//        expected.add(service.addPet(new Pet(0, "joe", PetType.FISH)));
-//        expected.add(service.addPet(new Pet(0, "sally", PetType.CAT)));
-//        expected.add(service.addPet(new Pet(0, "fido", PetType.DOG)));
-//
-//        var actual = service.listPets();
-//        assertIterableEquals(expected, actual);
-//    }
-//
-//    @Test
-//    void deletePet() throws ResponseException {
-//        List<Pet> expected = new ArrayList<>();
-//        var pet = service.addPet(new Pet(0, "joe", PetType.FISH));
-//        expected.add(service.addPet(new Pet(0, "sally", PetType.CAT)));
-//        expected.add(service.addPet(new Pet(0, "fido", PetType.DOG)));
-//
-//        service.deletePet(pet.id());
-//        var actual = service.listPets();
-//        assertIterableEquals(expected, actual);
-//    }
-//
-//    @Test
-//    void deleteAllPets() throws ResponseException {
-//        service.addPet(new Pet(0, "joe", PetType.FISH));
-//        service.addPet(new Pet(0, "sally", PetType.CAT));
-//        service.addPet(new Pet(0, "fido", PetType.DOG));
-//
-//        service.deleteAllPets();
-//        assertEquals(0, service.listPets().size());
-//    }
-//
-//    @Test
-//    void noDogsWithFleas() {
-//        assertThrows(ResponseException.class, () ->
-//                service.addPet(new Pet(0, "fleas", PetType.DOG)));
-//    }
+
 }
