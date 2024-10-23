@@ -27,20 +27,14 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
-        // Register your endpoints and handle exceptions here.
-//        Spark.get("/test", (req, res) -> {
-//            // Handle the request for the root path.
-//            return "Hello, world!";
-//        });
 
         Spark.delete("/db", this::clearDatabase);
-        ;
-
         Spark.post("/user", this::createUser);
         Spark.post("/session", this::loginUser);
         Spark.delete("/session", this::logoutUser);
         Spark.post("/game", this::createGame);
         Spark.get("/game", this::listGames);
+        Spark.put("/game", this::joinGame);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -120,6 +114,20 @@ public class Server {
             // Extract the authToken from the request headers
             String authToken = req.headers("authorization");
             return service.listGames(authToken);
+        } catch (ServiceException e) {
+            res.status(401);
+            return gson.toJson(new ErrorResponse(e.getMessage()));
+        }
+    }
+
+    private String joinGame(Request req, Response res) {
+        try {
+            // Extract the authToken from the request headers
+            String authToken = req.headers("authorization");
+            JoinGameRequest joinGameRequest = gson.fromJson(req.body(), JoinGameRequest.class);
+
+            return service.joinGame(authToken, joinGameRequest);
+
         } catch (ServiceException e) {
             res.status(401);
             return gson.toJson(new ErrorResponse(e.getMessage()));

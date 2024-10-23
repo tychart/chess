@@ -121,20 +121,23 @@ public class ServiceTest {
         String gameName = "testGame";
 
         String jsonReturn = service.createGame(authToken, gameName);
+        String jsonGameList = service.listGames(authToken);
 
-        Map<Integer, GameData> allGames = service.getAllGames();
-        assertEquals(1, allGames.size());
-        assertTrue(allGames.containsKey(1));
-        assertEquals(gameName, allGames.get(1).gameName());
+        GameListResponse allGames = gson.fromJson(jsonGameList, GameListResponse.class);
+        assertEquals(1, allGames.gameDataSimpleSet().size());
     }
 
     @Test
     void createGame_Unauthorized() throws Exception {
         String gameName = "testGame";
 
+        // Test unauthorized creation
         assertThrows(ServiceException.class, () -> service.createGame("invalidAuthToken", gameName));
-        Map<Integer, GameData> allGames = service.getAllGames();
-        assertEquals(0, allGames.size());
+
+        // Test unauthorized listing
+        assertThrows(ServiceException.class, () -> {
+            String jsonGameList = service.listGames("randWrongAuthToken");
+        });
     }
 
     @Test
@@ -146,9 +149,10 @@ public class ServiceTest {
 
         String authToken = logedInUser.authToken();
 
-        assertThrows(IllegalArgumentException.class, () -> service.createGame(authToken, null));
-        Map<Integer, GameData> allGames = service.getAllGames();
-        assertEquals(0, allGames.size());
+        assertThrows(ServiceException.class, () -> service.createGame(authToken, null));
+        String jsonGameList = service.listGames(authToken);
+        GameListResponse allGames = gson.fromJson(jsonGameList, GameListResponse.class);
+        assertEquals(0, allGames.gameDataSimpleSet().size());
     }
 
 

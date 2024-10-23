@@ -29,6 +29,8 @@ public interface DataAccess {
 
     void addGame(GameData gameData);
 
+    GameData getGame(int gameID);
+
     Map<Integer, GameData> getAllGames();
 
     void clearDatabase();

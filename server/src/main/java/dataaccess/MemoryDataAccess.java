@@ -90,6 +90,11 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public GameData getGame(int gameID) {
+        return this.gameDataTable.get(gameID);
+    }
+
+    @Override
     public Map<Integer, GameData> getAllGames() {
         return gameDataTable;
     }

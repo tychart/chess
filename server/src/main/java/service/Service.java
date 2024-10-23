@@ -2,6 +2,8 @@ package service;
 
 import com.google.protobuf.ServiceException;
 
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.google.gson.Gson;
@@ -88,11 +90,15 @@ public class Service {
     }
 
     public String createGame(String authToken, String gameName) throws ServiceException {
+        if (gameName == null) {
+            throw new ServiceException("Error: Please enter in a game name");
+        }
+
         UserData currUser = dataAccess.authenticateUser(authToken);
 
         ChessGame game = new ChessGame();
         int gameID = dataAccess.getNextGameID();
-        GameData gameData = new GameData(gameID, currUser.username(), null, gameName, game);
+        GameData gameData = new GameData(gameID, null, null, gameName, game);
 
 
         dataAccess.addGame(gameData);
@@ -100,11 +106,48 @@ public class Service {
         return gson.toJson(new GameIDResponse(gameID));
     }
 
-    public String listGames(String authToken) throws ServiceException {
+    public String joinGame(String authToken, JoinGameRequest joinGameRequest) throws ServiceException {
         UserData currUser = dataAccess.authenticateUser(authToken);
+        GameData updatedGame;
+        int gameID = joinGameRequest.gameId();
+
+        GameData gameData = dataAccess.getGame(gameID);
+        if (Objects.equals(joinGameRequest.playerColor(), "WHITE")) {
+            updatedGame = new GameData(
+                    gameData.gameID(),
+                    currUser.username(),
+                    gameData.blackUsername(),
+                    gameData.gameName(),
+                    gameData.game()
+            );
+        } else {
+            updatedGame = new GameData(
+                    gameData.gameID(),
+                    gameData.whiteUsername(),
+                    currUser.username(),
+                    gameData.gameName(),
+                    gameData.game()
+            );
+        }
+
+        dataAccess.addGame(updatedGame);
+        return "{}";
+    }
+
+    public String listGames(String authToken) throws ServiceException {
+        dataAccess.authenticateUser(authToken);
         Map<Integer, GameData> gameMap = dataAccess.getAllGames();
+        HashSet<GameDataSimple> gameSet = new HashSet<>();
 
-
+        for (GameData game : gameMap.values()) {
+            gameSet.add(new GameDataSimple(
+                    game.gameID(),
+                    game.whiteUsername(),
+                    game.blackUsername(),
+                    game.gameName()
+            ));
+        }
+        return gson.toJson(new GameListResponse(gameSet));
     }
 
 
