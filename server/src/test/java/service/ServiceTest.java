@@ -115,7 +115,7 @@ public class ServiceTest {
     }
 
     @Test
-    void createGame_Success() throws Exception {
+    void createGameSuccess() throws Exception {
         UserData user = new UserData("username", "password", "email");
         service.registerUser(user);
         String loggedInUserJson = service.loginUser(user);
@@ -132,7 +132,7 @@ public class ServiceTest {
     }
 
     @Test
-    void createGame_Unauthorized() throws Exception {
+    void createGameUnauthorized() throws Exception {
         String gameName = "testGame";
 
         // Test unauthorized creation
@@ -145,7 +145,7 @@ public class ServiceTest {
     }
 
     @Test
-    void createGame_MissingGameName() throws Exception {
+    void createGameMissingGameName() throws Exception {
         UserData user = new UserData("username", "password", "email");
         service.registerUser(user);
         String loggedInUserJson = service.loginUser(user);
@@ -161,7 +161,7 @@ public class ServiceTest {
 
 
     @Test
-    void joinGame_Success() throws Exception {
+    void joinGameSuccess() throws Exception {
         UserData user1 = new UserData("username1", "password", "email");
         UserData user2 = new UserData("username2", "password", "email");
         service.registerUser(user1);
@@ -186,14 +186,14 @@ public class ServiceTest {
     }
 
     @Test
-    void joinGame_Unauthorized() throws Exception {
+    void joinGameUnauthorized() throws Exception {
         // Test unauthorized joining
         JoinGameRequest joinRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
         assertThrows(ServiceException.class, () -> service.joinGame("invalidAuthToken", joinRequest));
     }
 
     @Test
-    void joinGame_InvalidGameID() throws Exception {
+    void joinGameInvalidGameID() throws Exception {
         UserData user = new UserData("username", "password", "email");
         service.registerUser(user);
         String loggedInUserJson = service.loginUser(user);
@@ -205,7 +205,7 @@ public class ServiceTest {
     }
 
     @Test
-    void joinGame_DuplicatePlayer() throws Exception {
+    void joinGameDuplicatePlayer() throws Exception {
         UserData user1 = new UserData("username1", "password", "email");
         UserData user2 = new UserData("username2", "password", "email");
         service.registerUser(user1);
