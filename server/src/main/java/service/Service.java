@@ -107,12 +107,24 @@ public class Service {
     }
 
     public String joinGame(String authToken, JoinGameRequest joinGameRequest) throws ServiceException {
+        if (joinGameRequest == null ||
+                joinGameRequest.playerColor() == null ||
+                joinGameRequest.gameID() == null ||
+                joinGameRequest.gameID() < 1
+        ) {
+            throw new ServiceException("Error: Join Game Request Malformed");
+        }
+
+
         UserData currUser = dataAccess.authenticateUser(authToken);
         GameData updatedGame;
-        int gameID = joinGameRequest.gameId();
+        int gameID = joinGameRequest.gameID();
 
         GameData gameData = dataAccess.getGame(gameID);
-        if (Objects.equals(joinGameRequest.playerColor(), "WHITE")) {
+        if (Objects.equals(joinGameRequest.playerColor(), ChessGame.TeamColor.WHITE)) {
+            if (gameData.whiteUsername() != null) {
+                throw new ServiceException("Error: Forbidden White is already chosen. Is user: " + gameData.whiteUsername());
+            }
             updatedGame = new GameData(
                     gameData.gameID(),
                     currUser.username(),
@@ -121,6 +133,9 @@ public class Service {
                     gameData.game()
             );
         } else {
+            if (gameData.blackUsername() != null) {
+                throw new ServiceException("Error: Forbidden White is already chosen. Is user: " + gameData.blackUsername());
+            }
             updatedGame = new GameData(
                     gameData.gameID(),
                     gameData.whiteUsername(),

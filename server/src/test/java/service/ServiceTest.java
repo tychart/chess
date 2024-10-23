@@ -2,12 +2,11 @@ package service;
 
 
 import com.google.protobuf.ServiceException;
+import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import model.*;
-import service.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +17,16 @@ import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.Map;
 
+import model.*;
+import service.Service;
+import chess.*;
+
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTest {
-
-    static final Service service = new Service(new MemoryDataAccess());
+    static DataAccess dataAccess = new MemoryDataAccess();
+    static final Service service = new Service(dataAccess);
     private final Gson gson = new Gson();
 
     @BeforeEach
@@ -124,7 +128,7 @@ public class ServiceTest {
         String jsonGameList = service.listGames(authToken);
 
         GameListResponse allGames = gson.fromJson(jsonGameList, GameListResponse.class);
-        assertEquals(1, allGames.gameDataSimpleSet().size());
+        assertEquals(1, allGames.games().size());
     }
 
     @Test
@@ -152,7 +156,75 @@ public class ServiceTest {
         assertThrows(ServiceException.class, () -> service.createGame(authToken, null));
         String jsonGameList = service.listGames(authToken);
         GameListResponse allGames = gson.fromJson(jsonGameList, GameListResponse.class);
-        assertEquals(0, allGames.gameDataSimpleSet().size());
+        assertEquals(0, allGames.games().size());
+    }
+
+
+    @Test
+    void joinGame_Success() throws Exception {
+        UserData user1 = new UserData("username1", "password", "email");
+        UserData user2 = new UserData("username2", "password", "email");
+        service.registerUser(user1);
+        service.registerUser(user2);
+        String loggedInUserJson = service.loginUser(user1);
+        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
+
+        String authToken = logedInUser.authToken();
+        String gameName = "testGame";
+        String jsonReturn = service.createGame(authToken, gameName);
+
+        // Join user2 as white
+        JoinGameRequest joinRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
+        String jsonJoinedGame = service.joinGame(authToken, joinRequest);
+
+        // Assert that the game is joined successfully
+        assertEquals("{}", jsonJoinedGame);
+
+        // Check that the game is updated with the new player
+        GameData gameData = dataAccess.getGame(1);
+        assertEquals(user1.username(), gameData.whiteUsername());
+    }
+
+    @Test
+    void joinGame_Unauthorized() throws Exception {
+        // Test unauthorized joining
+        JoinGameRequest joinRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
+        assertThrows(ServiceException.class, () -> service.joinGame("invalidAuthToken", joinRequest));
+    }
+
+    @Test
+    void joinGame_InvalidGameID() throws Exception {
+        UserData user = new UserData("username", "password", "email");
+        service.registerUser(user);
+        String loggedInUserJson = service.loginUser(user);
+        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
+
+        String authToken = logedInUser.authToken();
+        JoinGameRequest joinRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, -1);
+        assertThrows(ServiceException.class, () -> service.joinGame(authToken, joinRequest));
+    }
+
+    @Test
+    void joinGame_DuplicatePlayer() throws Exception {
+        UserData user1 = new UserData("username1", "password", "email");
+        UserData user2 = new UserData("username2", "password", "email");
+        service.registerUser(user1);
+        service.registerUser(user2);
+        String loggedInUserJson = service.loginUser(user1);
+        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
+
+        String authToken = logedInUser.authToken();
+        String gameName = "testGame";
+        service.createGame(authToken, gameName);
+
+        // Join user2 as white
+        JoinGameRequest joinRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
+        service.joinGame(authToken, joinRequest);
+
+        // Attempt to join user2 again as black
+        joinRequest = new JoinGameRequest(ChessGame.TeamColor.BLACK, 1);
+        JoinGameRequest finalJoinRequest = joinRequest;
+        assertThrows(ServiceException.class, () -> service.joinGame(authToken, finalJoinRequest));
     }
 
 

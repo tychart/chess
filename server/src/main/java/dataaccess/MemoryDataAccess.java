@@ -90,8 +90,12 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public GameData getGame(int gameID) {
-        return this.gameDataTable.get(gameID);
+    public GameData getGame(int gameID) throws ServiceException {
+        GameData gameData = this.gameDataTable.get(gameID);
+        if (gameData == null) {
+            throw new ServiceException("Error: Game with ID " + gameID + " not found");
+        }
+        return gameData;
     }
 
     @Override

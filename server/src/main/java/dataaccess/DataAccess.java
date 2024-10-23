@@ -29,7 +29,7 @@ public interface DataAccess {
 
     void addGame(GameData gameData);
 
-    GameData getGame(int gameID);
+    GameData getGame(int gameID) throws ServiceException;
 
     Map<Integer, GameData> getAllGames();
 

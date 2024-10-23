@@ -129,7 +129,14 @@ public class Server {
             return service.joinGame(authToken, joinGameRequest);
 
         } catch (ServiceException e) {
-            res.status(401);
+            if (e.getMessage().contains("authorize")) {
+                res.status(401);
+            } else if (e.getMessage().contains("Forbidden")) {
+                res.status(403);
+            } else {
+                res.status(400);
+            }
+
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
     }

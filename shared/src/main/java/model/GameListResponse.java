@@ -2,5 +2,5 @@ package model;
 
 import java.util.Set;
 
-public record GameListResponse(Set<GameDataSimple> gameDataSimpleSet) {
+public record GameListResponse(Set<GameDataSimple> games) {
 }
