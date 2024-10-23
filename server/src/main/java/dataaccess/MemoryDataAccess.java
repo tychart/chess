@@ -30,12 +30,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void addAuthData(AuthData authData) throws ServiceException {
-        // Prevent changing to a new authToken if already logged in
-        if (authDataTable.containsKey(authData.username())) {
-            return;
-        }
-
-        this.authDataTable.put(authData.username(), authData);
+        this.authDataTable.put(authData.authToken(), authData);
     }
 
     @Override
@@ -46,8 +41,8 @@ public class MemoryDataAccess implements DataAccess {
     @Override
     public void deleteAuthData(String authToken) throws ServiceException {
 
-        String userToLogOut = this.authenticateUser(authToken).username();
-        this.authDataTable.remove(userToLogOut);
+//        String userToLogOut = this.authenticateUser(authToken);
+        this.authDataTable.remove(authToken);
     }
 
     @Override

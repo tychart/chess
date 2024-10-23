@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTest {
     static DataAccess dataAccess = new MemoryDataAccess();
-    static final Service service = new Service(dataAccess);
+    static Service service = new Service(dataAccess);
     private final Gson gson = new Gson();
 
     @BeforeEach

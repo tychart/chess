@@ -72,6 +72,7 @@ public class Service {
     }
 
     public String logoutUser(String authToken) throws ServiceException {
+        dataAccess.authenticateUser(authToken);
         dataAccess.deleteAuthData(authToken);
         return "{}";
     }
@@ -114,7 +115,10 @@ public class Service {
         GameData gameData = dataAccess.getGame(gameID);
         if (Objects.equals(joinGameRequest.playerColor(), ChessGame.TeamColor.WHITE)) {
             if (gameData.whiteUsername() != null) {
-                throw new ServiceException("Error: Forbidden White is already chosen. Is user: " + gameData.whiteUsername());
+                throw new ServiceException("Error: Forbidden, White is already chosen. Is user: " + gameData.whiteUsername());
+            }
+            if (Objects.equals(gameData.blackUsername(), currUser.username())) {
+                throw new ServiceException("Error: Forbidden, Player is already Black User");
             }
             updatedGame = new GameData(
                     gameData.gameID(),
@@ -125,7 +129,10 @@ public class Service {
             );
         } else {
             if (gameData.blackUsername() != null) {
-                throw new ServiceException("Error: Forbidden White is already chosen. Is user: " + gameData.blackUsername());
+                throw new ServiceException("Error: Forbidden, White is already chosen. Is user: " + gameData.blackUsername());
+            }
+            if (Objects.equals(gameData.whiteUsername(), currUser.username())) {
+                throw new ServiceException("Error: Forbidden, Player is already White User");
             }
             updatedGame = new GameData(
                     gameData.gameID(),
