@@ -164,7 +164,7 @@ public class ChessGame {
         return tryEveryPosition(teamColor, false);
     }
 
-    private boolean tryEveryPosition(TeamColor teamColor, boolean check_current) {
+    private boolean tryEveryPosition(TeamColor teamColor, boolean checkCurrent) {
 //        ChessGame.TeamColor opponentTeamColor = ChessGame.getOpposingTeamColor(teamColor);
         HashSet<ChessPosition> opponentPieces = getBoard().getAllTeamPieces(teamColor);
         HashSet<ChessMove> allMoves = new HashSet<>();
@@ -186,7 +186,7 @@ public class ChessGame {
 
         // If checking for checkmate rather than stalemate, also check to see if in check
         // If checking for stalemate, then do not return true if there is a checkmate
-        if (check_current) {
+        if (checkCurrent) {
             return this.getBoard().kingInCheck(this.getTeamTurn());
         } else if (this.getBoard().kingInCheck(this.getTeamTurn())) {
             return false;
