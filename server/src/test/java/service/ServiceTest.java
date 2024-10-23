@@ -204,28 +204,5 @@ public class ServiceTest {
         assertThrows(ServiceException.class, () -> service.joinGame(authToken, joinRequest));
     }
 
-    @Test
-    void joinGameDuplicatePlayer() throws Exception {
-        UserData user1 = new UserData("username1", "password", "email");
-        UserData user2 = new UserData("username2", "password", "email");
-        service.registerUser(user1);
-        service.registerUser(user2);
-        String loggedInUserJson = service.loginUser(user1);
-        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
-
-        String authToken = logedInUser.authToken();
-        String gameName = "testGame";
-        service.createGame(authToken, gameName);
-
-        // Join user2 as white
-        JoinGameRequest joinRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
-        service.joinGame(authToken, joinRequest);
-
-        // Attempt to join user2 again as black
-        joinRequest = new JoinGameRequest(ChessGame.TeamColor.BLACK, 1);
-        JoinGameRequest finalJoinRequest = joinRequest;
-        assertThrows(ServiceException.class, () -> service.joinGame(authToken, finalJoinRequest));
-    }
-
 
 }

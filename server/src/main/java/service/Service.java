@@ -117,9 +117,9 @@ public class Service {
             if (gameData.whiteUsername() != null) {
                 throw new ServiceException("Error: Forbidden, White is already chosen. Is user: " + gameData.whiteUsername());
             }
-            if (Objects.equals(gameData.blackUsername(), currUser.username())) {
-                throw new ServiceException("Error: Forbidden, Player is already Black User");
-            }
+//            if (Objects.equals(gameData.blackUsername(), currUser.username())) {
+//                throw new ServiceException("Error: Forbidden, Player is already Black User");
+//            }
             updatedGame = new GameData(
                     gameData.gameID(),
                     currUser.username(),
@@ -131,9 +131,9 @@ public class Service {
             if (gameData.blackUsername() != null) {
                 throw new ServiceException("Error: Forbidden, White is already chosen. Is user: " + gameData.blackUsername());
             }
-            if (Objects.equals(gameData.whiteUsername(), currUser.username())) {
-                throw new ServiceException("Error: Forbidden, Player is already White User");
-            }
+//            if (Objects.equals(gameData.whiteUsername(), currUser.username())) {
+//                throw new ServiceException("Error: Forbidden, Player is already White User");
+//            }
             updatedGame = new GameData(
                     gameData.gameID(),
                     gameData.whiteUsername(),
