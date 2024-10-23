@@ -6,11 +6,11 @@ import java.util.UUID;
 
 import com.google.gson.Gson;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import dataaccess.DataAccess;
 import model.*;
+import chess.*;
 
 
 public class Service {
@@ -79,13 +79,24 @@ public class Service {
     }
 
     public String logoutUser(String authToken) throws ServiceException {
-        dataAccess.deleteAuthToken(authToken);
+        dataAccess.deleteAuthData(authToken);
         return "{}";
     }
 
     public Map<String, UserData> getAllUsers() {
         return dataAccess.getAllUsers();
     }
+
+    public String createGame(String authToken) throws ServiceException {
+        UserData currUser = dataAccess.authenticateUser(authToken);
+
+        ChessGame game = new ChessGame();
+
+        dataAccess.
+
+        return "";
+    }
+
 
     private String generateAuthToken() {
         return UUID.randomUUID().toString();

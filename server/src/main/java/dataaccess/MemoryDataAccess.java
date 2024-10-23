@@ -9,11 +9,12 @@ import model.*;
 public class MemoryDataAccess implements DataAccess {
 
     private Map<String, UserData> users;
-    private Map<String, AuthData> authData;
+    private Map<String, AuthData> authDataTable;
+    private Map<String, AuthData> gameDataTable;
 
     public MemoryDataAccess() {
         users = new HashMap<>();
-        authData = new HashMap<>();
+        authDataTable = new HashMap<>();
     }
 
     @Override
@@ -33,7 +34,7 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void addAuthData(AuthData authData) {
-        this.authData.put(authData.username(), authData);
+        this.authDataTable.put(authData.username(), authData);
     }
 
     @Override
@@ -42,18 +43,45 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void deleteAuthToken(String authToken) throws ServiceException {
-        for (UserData user : users.values()) {
-            if (user.getAuthToken().equals(authToken)) {
-                user.setAuthToken("");
-                return;
+    public void deleteAuthData(String authToken) throws ServiceException {
+//        for (AuthData authData : this.authDataTable.values()) {
+//            if (authData.authToken().equals(authToken)) {
+//                this.authDataTable.remove(authData.username());
+//                return;
+//            }
+//        }
+//
+//
+////        for (UserData user : users.values()) {
+////            if (user.getAuthToken().equals(authToken)) {
+////                user.setAuthToken("");
+////                return;
+////            }
+////        }
+//        throw new ServiceException("Error: Provided authToken not found in the database, unauthorized");
+
+        String userToLogOut = this.authenticateUser(authToken).username();
+        this.authDataTable.remove(userToLogOut);
+    }
+
+    @Override
+    public UserData authenticateUser(String authToken) throws ServiceException {
+        for (AuthData authData : this.authDataTable.values()) {
+            if (authData.authToken().equals(authToken)) {
+                return this.getUser(authData.username());
             }
         }
         throw new ServiceException("Error: Provided authToken not found in the database, unauthorized");
     }
 
     @Override
+    public GameData addGame(GameData gameData) {
+
+    }
+
+    @Override
     public void clearDatabase() {
-        users = new HashMap<>();
+        users.clear();
+        authDataTable.clear();
     }
 }

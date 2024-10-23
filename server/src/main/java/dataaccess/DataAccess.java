@@ -20,8 +20,10 @@ public interface DataAccess {
 
     void addAuthData(AuthData authData);
 
+    UserData authenticateUser(String authToken) throws ServiceException;
+
     // Used for logging out a user
-    void deleteAuthToken(String authToken) throws ServiceException;
+    void deleteAuthData(String authToken) throws ServiceException;
 
     void clearDatabase();
 }

@@ -39,6 +39,7 @@ public class Server {
         Spark.post("/user", this::createUser);
         Spark.post("/session", this::loginUser);
         Spark.delete("/session", this::logoutUser);
+        Spark.post("/game", this::createGame);
 
         //This line initializes the server and can be removed once you have a functioning endpoint 
         Spark.init();
@@ -91,13 +92,23 @@ public class Server {
             // Extract the authToken from the request headers
             String authToken = req.headers("authorization");
             return service.logoutUser(authToken);
-        } catch (IllegalArgumentException e) {
+        } catch (ServiceException e) {
             res.status(401);
             return gson.toJson(new ErrorResponse(e.getMessage()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 //        return "";
+    }
+
+    private String createGame(Request req, Response res) {
+        try {
+            String authToken = req.headers("authorization");
+            return service.createGame(authToken);
+        } catch (ServiceException e) {
+
+        }
+        return "";
     }
 
 

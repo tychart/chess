@@ -6,7 +6,7 @@ import dataaccess.MemoryDataAccess;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.UserData;
+import model.*;
 import service.Service;
 
 import java.util.ArrayList;
@@ -37,19 +37,17 @@ public class ServiceTest {
         System.out.println(jsonReturn);
         Map<String, UserData> allUsers = service.getAllUsers();
         assertEquals(1, allUsers.size());
-        assertTrue(allUsers.containsKey(newUser.getUsername()));
+        assertTrue(allUsers.containsKey(newUser.username()));
     }
 
     @Test
     void registerUserFail() throws Exception {
-        UserData newUser = new UserData("username", "badpass", "myemail");
-        newUser.setPassword(null);
-//        String jsonReturn = ;
+        UserData newUser = new UserData("username", null, "myemail");
         assertThrows(IllegalArgumentException.class, () -> service.registerUser(newUser));
 //        System.out.println(jsonReturn);
         Map<String, UserData> allUsers = service.getAllUsers();
         assertEquals(0, allUsers.size());
-        assertFalse(allUsers.containsKey(newUser.getUsername()));
+        assertFalse(allUsers.containsKey(newUser.username()));
     }
 
     @Test
@@ -59,7 +57,7 @@ public class ServiceTest {
         assertThrows(ServiceException.class, () -> service.registerUser(newUser));
         Map<String, UserData> allUsers = service.getAllUsers();
         assertEquals(1, allUsers.size());
-        assertTrue(allUsers.containsKey(newUser.getUsername()));
+        assertTrue(allUsers.containsKey(newUser.username()));
     }
 
     @Test
@@ -98,10 +96,10 @@ public class ServiceTest {
         UserData user = new UserData("username", "password", "email");
         service.registerUser(user);
         String loggedInUserJson = service.loginUser(user);
-        UserData logedInUser = gson.fromJson(loggedInUserJson, UserData.class);
+        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
 
 
-        String authToken = logedInUser.getAuthToken();
+        String authToken = logedInUser.authToken();
         String jsonReturn = service.logoutUser(authToken);
 
         assertEquals("{}", jsonReturn);
