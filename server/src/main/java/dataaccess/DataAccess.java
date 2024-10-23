@@ -18,7 +18,7 @@ public interface DataAccess {
 
     Map<String, UserData> getAllUsers();
 
-    void addAuthData(AuthData authData);
+    void addAuthData(AuthData authData) throws ServiceException;
 
     UserData authenticateUser(String authToken) throws ServiceException;
 
