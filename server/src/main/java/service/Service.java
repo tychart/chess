@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dataaccess.DataAccess;
-import server.UserData;
+import model.*;
 
 
 public class Service {
@@ -27,44 +27,54 @@ public class Service {
     }
 
     public String registerUser(UserData newUser) throws ServiceException {
-        if (newUser.getUsername() == null ||
-                newUser.getPassword() == null ||
-                newUser.getEmail() == null
+        if (newUser.username() == null ||
+                newUser.password() == null ||
+                newUser.email() == null
         ) {
             throw new IllegalArgumentException("Error: Missing vital signup information, please fill out all fields");
         }
 
-        if (dataAccess.getUser(newUser.getUsername()) != null) {
+        if (dataAccess.getUser(newUser.username()) != null) {
             throw new ServiceException("Error: User already exists");
         }
 
         dataAccess.addUser(newUser);
 
-        Map<String, Object> returnData = new HashMap<>();
+        AuthData authData = new AuthData(newUser.username(), generateAuthToken());
 
-        returnData.put("username", newUser.getUsername());
-        returnData.put("authToken", generateAuthToken());
+        dataAccess.addAuthData(authData);
+
+        LoginResponse loginResponse = new LoginResponse(newUser.username(), authData.authToken());
+//        Map<String, Object> returnData = new HashMap<>();
+//
+//        returnData.put("username", newUser.username());
+//        returnData.put("authToken", generateAuthToken());
 
         // Return a JSON response with username and authToken
-        return gson.toJson(returnData);
+        return gson.toJson(loginResponse);
     }
 
     public String loginUser(UserData loginUser) throws ServiceException {
-        if (dataAccess.getUser(loginUser.getUsername()) == null || !dataAccess.getUser(loginUser.getUsername()).getPassword().equals(loginUser.getPassword())) {
+        if (
+                dataAccess.getUser(loginUser.username()) == null ||
+                        !dataAccess.getUser(loginUser.username()).password().equals(loginUser.password())
+        ) {
             throw new ServiceException("Error: Invalid username or password");
         }
 
-        loginUser.setAuthToken(generateAuthToken());
+        AuthData authData = new AuthData(loginUser.username(), generateAuthToken());
 
-        dataAccess.updateUser(loginUser);
+        dataAccess.addAuthData(authData);
 
-        Map<String, Object> returnData = new HashMap<>();
+        LoginResponse loginResponse = new LoginResponse(loginUser.username(), authData.authToken());
 
-        returnData.put("username", loginUser.getUsername());
-        returnData.put("authToken", generateAuthToken());
+//        Map<String, Object> returnData = new HashMap<>();
+//
+//        returnData.put("username", loginUser.username());
+//        returnData.put("authToken", loginUser.getAuthToken());
 
         // Return a JSON response with username and authToken
-        return gson.toJson(returnData);
+        return gson.toJson(loginResponse);
 
     }
 

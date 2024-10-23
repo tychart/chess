@@ -1,6 +1,7 @@
 package dataaccess;
 
-import server.UserData;
+import com.google.protobuf.ServiceException;
+import model.*;
 
 import java.util.Map;
 
@@ -17,8 +18,10 @@ public interface DataAccess {
 
     Map<String, UserData> getAllUsers();
 
-    // Used for loging out a user
-    void deleteAuthToken(String authToken);
+    void addAuthData(AuthData authData);
+
+    // Used for logging out a user
+    void deleteAuthToken(String authToken) throws ServiceException;
 
     void clearDatabase();
 }

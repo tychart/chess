@@ -2,11 +2,12 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ServiceException;
-import dataaccess.DataAccess;
-import dataaccess.MemoryDataAccess;
 import spark.*;
 
+import dataaccess.DataAccess;
+import dataaccess.MemoryDataAccess;
 import service.Service;
+import model.*;
 
 public class Server {
 
