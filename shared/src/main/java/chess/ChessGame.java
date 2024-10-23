@@ -2,7 +2,6 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -74,7 +73,7 @@ public class ChessGame {
             currPotentialBoard.unsafeMovePiece(currMove);
 
             // Make sure the current player's king does not become in check after that move is made
-            if (!currPotentialBoard.king_in_check(currPiece.getTeamColor())) {
+            if (!currPotentialBoard.kingInCheck(currPiece.getTeamColor())) {
                 validMoves.add(currMove);
             }
         }
@@ -120,7 +119,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        return this.getBoard().king_in_check(teamColor);
+        return this.getBoard().kingInCheck(teamColor);
     }
 
 //    // Given a board, is the king in check?
@@ -180,7 +179,7 @@ public class ChessGame {
             currPotentialBoard.unsafeMovePiece(currMove);
 
             // Make sure the current player's king does not become in check after that move is made
-            if (!currPotentialBoard.king_in_check(this.getTeamTurn())) {
+            if (!currPotentialBoard.kingInCheck(this.getTeamTurn())) {
                 return false;
             }
         }
@@ -188,8 +187,8 @@ public class ChessGame {
         // If checking for checkmate rather than stalemate, also check to see if in check
         // If checking for stalemate, then do not return true if there is a checkmate
         if (check_current) {
-            return this.getBoard().king_in_check(this.getTeamTurn());
-        } else if (this.getBoard().king_in_check(this.getTeamTurn())) {
+            return this.getBoard().kingInCheck(this.getTeamTurn());
+        } else if (this.getBoard().kingInCheck(this.getTeamTurn())) {
             return false;
         }
 

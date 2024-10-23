@@ -1,11 +1,8 @@
 package chess;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -129,7 +126,7 @@ public class ChessBoard {
 
 
     // Given a team color, is that king in check?
-    public boolean king_in_check(ChessGame.TeamColor teamColor) {
+    public boolean kingInCheck(ChessGame.TeamColor teamColor) {
         ChessGame.TeamColor opponentTeamColor = ChessGame.getOpposingTeamColor(teamColor);
         HashSet<ChessPosition> opponentPieces = this.getAllTeamPieces(opponentTeamColor);
         HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
