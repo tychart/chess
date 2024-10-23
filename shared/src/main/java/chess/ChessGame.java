@@ -122,27 +122,6 @@ public class ChessGame {
         return this.getBoard().kingInCheck(teamColor);
     }
 
-//    // Given a board, is the king in check?
-//    private boolean willLeadToCheck(ChessBoard currBoard, TeamColor teamColor) {
-//        Map<ChessPiece, ChessPosition> teamPieces = currBoard.getAllTeamPieces(teamColor);
-//        HashSet<ChessMove> allMoves = new HashSet<ChessMove>();
-//        HashSet<ChessPosition> allEndPositions = new HashSet<ChessPosition>();
-//        ChessPosition kingPosition = currBoard.getKingPosition(teamColor);
-//
-//        for (Map.Entry<ChessPiece, ChessPosition> entry : teamPieces.entrySet()) {
-//            ChessPiece piece = entry.getKey();
-//            ChessPosition position = entry.getValue();
-//            allMoves.addAll(piece.pieceMoves(currBoard, position));
-//        }
-//
-//        for (ChessMove move : allMoves) {
-//            allEndPositions.add(move.getEndPosition());
-//        }
-//
-//        return allEndPositions.contains(kingPosition);
-//    }
-
-
     /**
      * Determines if the given team is in checkmate
      *

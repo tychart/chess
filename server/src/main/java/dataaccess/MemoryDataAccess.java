@@ -24,11 +24,6 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
-    public void updateUser(UserData user) {
-        users.replace(user.username(), user);
-    }
-
-    @Override
     public UserData getUser(String username) {
         return users.get(username);
     }
@@ -50,21 +45,6 @@ public class MemoryDataAccess implements DataAccess {
 
     @Override
     public void deleteAuthData(String authToken) throws ServiceException {
-//        for (AuthData authData : this.authDataTable.values()) {
-//            if (authData.authToken().equals(authToken)) {
-//                this.authDataTable.remove(authData.username());
-//                return;
-//            }
-//        }
-//
-//
-////        for (UserData user : users.values()) {
-////            if (user.getAuthToken().equals(authToken)) {
-////                user.setAuthToken("");
-////                return;
-////            }
-////        }
-//        throw new ServiceException("Error: Provided authToken not found in the database, unauthorized");
 
         String userToLogOut = this.authenticateUser(authToken).username();
         this.authDataTable.remove(userToLogOut);

@@ -47,10 +47,6 @@ public class Service {
         dataAccess.addAuthData(authData);
 
         LoginResponse loginResponse = new LoginResponse(newUser.username(), authData.authToken());
-//        Map<String, Object> returnData = new HashMap<>();
-//
-//        returnData.put("username", newUser.username());
-//        returnData.put("authToken", generateAuthToken());
 
         // Return a JSON response with username and authToken
         return gson.toJson(loginResponse);
@@ -69,11 +65,6 @@ public class Service {
         dataAccess.addAuthData(authData);
 
         LoginResponse loginResponse = new LoginResponse(loginUser.username(), authData.authToken());
-
-//        Map<String, Object> returnData = new HashMap<>();
-//
-//        returnData.put("username", loginUser.username());
-//        returnData.put("authToken", loginUser.getAuthToken());
 
         // Return a JSON response with username and authToken
         return gson.toJson(loginResponse);
