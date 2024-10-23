@@ -29,5 +29,7 @@ public interface DataAccess {
 
     void addGame(GameData gameData);
 
+    Map<Integer, GameData> getAllGames();
+
     void clearDatabase();
 }

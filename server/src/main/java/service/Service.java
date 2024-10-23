@@ -100,6 +100,13 @@ public class Service {
         return gson.toJson(new GameIDResponse(gameID));
     }
 
+    public String listGames(String authToken) throws ServiceException {
+        UserData currUser = dataAccess.authenticateUser(authToken);
+        Map<Integer, GameData> gameMap = dataAccess.getAllGames();
+
+
+    }
+
 
     private String generateAuthToken() {
         return UUID.randomUUID().toString();

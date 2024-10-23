@@ -110,5 +110,46 @@ public class ServiceTest {
         assertThrows(ServiceException.class, () -> service.logoutUser("invalid_auth_token"));
     }
 
+    @Test
+    void createGame_Success() throws Exception {
+        UserData user = new UserData("username", "password", "email");
+        service.registerUser(user);
+        String loggedInUserJson = service.loginUser(user);
+        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
+
+        String authToken = logedInUser.authToken();
+        String gameName = "testGame";
+
+        String jsonReturn = service.createGame(authToken, gameName);
+
+        Map<Integer, GameData> allGames = service.getAllGames();
+        assertEquals(1, allGames.size());
+        assertTrue(allGames.containsKey(1));
+        assertEquals(gameName, allGames.get(1).gameName());
+    }
+
+    @Test
+    void createGame_Unauthorized() throws Exception {
+        String gameName = "testGame";
+
+        assertThrows(ServiceException.class, () -> service.createGame("invalidAuthToken", gameName));
+        Map<Integer, GameData> allGames = service.getAllGames();
+        assertEquals(0, allGames.size());
+    }
+
+    @Test
+    void createGame_MissingGameName() throws Exception {
+        UserData user = new UserData("username", "password", "email");
+        service.registerUser(user);
+        String loggedInUserJson = service.loginUser(user);
+        LoginResponse logedInUser = gson.fromJson(loggedInUserJson, LoginResponse.class);
+
+        String authToken = logedInUser.authToken();
+
+        assertThrows(IllegalArgumentException.class, () -> service.createGame(authToken, null));
+        Map<Integer, GameData> allGames = service.getAllGames();
+        assertEquals(0, allGames.size());
+    }
+
 
 }

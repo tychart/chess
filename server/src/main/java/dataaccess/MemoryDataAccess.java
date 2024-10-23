@@ -90,6 +90,11 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public Map<Integer, GameData> getAllGames() {
+        return gameDataTable;
+    }
+
+    @Override
     public void clearDatabase() {
         users.clear();
         authDataTable.clear();
