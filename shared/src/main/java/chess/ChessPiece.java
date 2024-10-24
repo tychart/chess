@@ -174,105 +174,149 @@ public class ChessPiece {
         }
     }
 
-    private void search(ChessBoard board, ChessPosition myPosition, ChessPiece.Direction direction, int numSearch) {
+    private void search(ChessBoard board, ChessPosition currPos, ChessPiece.Direction direction, int numSearch) {
         for (int i = 1; i < numSearch + 1; i++) {
-            ChessPosition newPos = handleOffSet(myPosition, direction, i);
+            ChessPosition newPos = handleOffSet(currPos, direction, i);
             boolean flagPromotion = false;
 
-            // Catch out of bounds queries
-            if (
-                    newPos.getRow() >= 0 &&
-                            newPos.getColumn() >= 0 &&
-                            newPos.getRow() < 8 &&
-                            newPos.getColumn() < 8
-            ) {
-                if (this.getPieceType() == PieceType.PAWN) {
-                    if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
-                        if (newPos.getNiceRow() == 8) {
-                            flagPromotion = true;
-                        }
+            ChessMove newMove = new ChessMove(currPos, newPos, null);
+
+            if (this.getPieceType() != PieceType.PAWN) {
+
+
+                if ( // Make sure is in bounds
+                        newPos.getNiceRow() > 0 &&
+                                newPos.getNiceRow() <= 8 &&
+                                newPos.getNiceColumn() > 0 &&
+                                newPos.getNiceColumn() <= 8
+                ) {
+
+                    if (board.getPiece(newPos) == null) {
+                        this.movesPossible.add(newMove);
+                    } else if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) { // Is enemy
+                        this.movesPossible.add(newMove);
+                        return;
                     } else {
-                        if (newPos.getNiceRow() == 1) {
-                            flagPromotion = true;
-                        }
+                        return; // Can't phase through your own pieces
                     }
-                }
-
-                // If nothing is there, then allow to move there
-                if (board.getPiece(newPos) == null) {
-
-                    // If the pawn is moving diagonally, we only want to record if it is capturing
-                    if (this.getPieceType() == PieceType.PAWN) {
-                        if (direction == Direction.UP || direction == Direction.DOWN) {
-                            if (flagPromotion) {
-                                for (int j = 0; j < 4; j++) {
-                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.QUEEN));
-                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.BISHOP));
-                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.KNIGHT));
-                                    this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.ROOK));
-                                }
-                            } else {
-                                this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
-                            }
-                        }
-                    } else {
-                        this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
-                    }
-
 
                 } else {
-
-                    // Catch piece collisions with the opposing team
-                    if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
-                        if (this.getPieceType() == PieceType.PAWN) {
-                            if (direction != Direction.UP && direction != Direction.DOWN) {
-                                if (flagPromotion) {
-                                    for (int j = 0; j < 4; j++) {
-                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.QUEEN));
-                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.BISHOP));
-                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.KNIGHT));
-                                        this.movesPossible.add(new ChessMove(myPosition, newPos, PieceType.ROOK));
-                                    }
-                                } else {
-                                    this.movesPossible.add(new ChessMove(myPosition, newPos, null)); //Null for now until pawns
-                                }
-                            }
-                        } else {
-                            this.movesPossible.add(new ChessMove(myPosition, newPos, null));
-                        }
-                    }
                     return;
                 }
+
             } else {
-                return; // If it is out of bounds, it should stop checking
+                i = handlePawnSearch(board, direction, currPos, newPos, newMove, i);
             }
         }
     }
 
-    private ChessPosition handleOffSet(ChessPosition myPosition, ChessPiece.Direction direction, int i) {
+
+    private ChessPosition handleOffSet(ChessPosition currPos, ChessPiece.Direction direction, int i) {
         ChessPosition newPos;
         switch (direction) {
-            case UP -> newPos = new ChessPosition(myPosition.getNiceRow() + i, myPosition.getNiceColumn());
-            case DOWN -> newPos = new ChessPosition(myPosition.getNiceRow() - i, myPosition.getNiceColumn());
-            case LEFT -> newPos = new ChessPosition(myPosition.getNiceRow(), myPosition.getNiceColumn() - i);
-            case RIGHT -> newPos = new ChessPosition(myPosition.getNiceRow(), myPosition.getNiceColumn() + i);
-            case UPLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() + i, myPosition.getNiceColumn() - i);
-            case UPRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() + i, myPosition.getNiceColumn() + i);
-            case DOWNLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() - i, myPosition.getNiceColumn() - i);
-            case DOWNRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() - i, myPosition.getNiceColumn() + i);
-            case KLEFTUP -> newPos = new ChessPosition(myPosition.getNiceRow() + 1, myPosition.getNiceColumn() - 2);
-            case KUPLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() + 2, myPosition.getNiceColumn() - 1);
-            case KUPRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() + 2, myPosition.getNiceColumn() + 1);
-            case KRIGHTUP -> newPos = new ChessPosition(myPosition.getNiceRow() + 1, myPosition.getNiceColumn() + 2);
-            case KRIGHTDOWN -> newPos = new ChessPosition(myPosition.getNiceRow() - 1, myPosition.getNiceColumn() + 2);
-            case KDOWNRIGHT -> newPos = new ChessPosition(myPosition.getNiceRow() - 2, myPosition.getNiceColumn() + 1);
-            case KDOWNLEFT -> newPos = new ChessPosition(myPosition.getNiceRow() - 2, myPosition.getNiceColumn() - 1);
-            case KLEFTDOWN -> newPos = new ChessPosition(myPosition.getNiceRow() - 1, myPosition.getNiceColumn() - 2);
+            case UP -> newPos = new ChessPosition(currPos.getNiceRow() + i, currPos.getNiceColumn());
+            case DOWN -> newPos = new ChessPosition(currPos.getNiceRow() - i, currPos.getNiceColumn());
+            case LEFT -> newPos = new ChessPosition(currPos.getNiceRow(), currPos.getNiceColumn() - i);
+            case RIGHT -> newPos = new ChessPosition(currPos.getNiceRow(), currPos.getNiceColumn() + i);
+            case UPLEFT -> newPos = new ChessPosition(currPos.getNiceRow() + i, currPos.getNiceColumn() - i);
+            case UPRIGHT -> newPos = new ChessPosition(currPos.getNiceRow() + i, currPos.getNiceColumn() + i);
+            case DOWNLEFT -> newPos = new ChessPosition(currPos.getNiceRow() - i, currPos.getNiceColumn() - i);
+            case DOWNRIGHT -> newPos = new ChessPosition(currPos.getNiceRow() - i, currPos.getNiceColumn() + i);
+            case KLEFTUP -> newPos = new ChessPosition(currPos.getNiceRow() + 1, currPos.getNiceColumn() - 2);
+            case KUPLEFT -> newPos = new ChessPosition(currPos.getNiceRow() + 2, currPos.getNiceColumn() - 1);
+            case KUPRIGHT -> newPos = new ChessPosition(currPos.getNiceRow() + 2, currPos.getNiceColumn() + 1);
+            case KRIGHTUP -> newPos = new ChessPosition(currPos.getNiceRow() + 1, currPos.getNiceColumn() + 2);
+            case KRIGHTDOWN -> newPos = new ChessPosition(currPos.getNiceRow() - 1, currPos.getNiceColumn() + 2);
+            case KDOWNRIGHT -> newPos = new ChessPosition(currPos.getNiceRow() - 2, currPos.getNiceColumn() + 1);
+            case KDOWNLEFT -> newPos = new ChessPosition(currPos.getNiceRow() - 2, currPos.getNiceColumn() - 1);
+            case KLEFTDOWN -> newPos = new ChessPosition(currPos.getNiceRow() - 1, currPos.getNiceColumn() - 2);
             default ->
                     throw new RuntimeException("Used Wrong Direction! Direction Entered: " + direction + " Expected Enum of ChessPiece.Direction");
         }
         return newPos;
 
+    }
+
+    private int handlePawnSearch(ChessBoard board, ChessPiece.Direction direction, ChessPosition currPos, ChessPosition newPos, ChessMove newMove, int currentMoveNumber) {
+
+        // Wierd Pawn Stuff
+        boolean promotionFlag = false;
+
+        if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (newPos.getNiceRow() == 8) {
+                promotionFlag = true;
+            }
+        } else {
+            if (newPos.getNiceRow() == 1) {
+                promotionFlag = true;
+            }
+        }
+
+        if ( // Make sure is in bounds
+                newPos.getNiceRow() > 0 &&
+                        newPos.getNiceRow() <= 8 &&
+                        newPos.getNiceColumn() > 0 &&
+                        newPos.getNiceColumn() <= 8
+        ) {
+            if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                if (direction == Direction.UP) {
+                    if (board.getPiece(newPos) == null) {
+                        if (promotionFlag) {
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+                        } else {
+                            this.movesPossible.add(newMove);
+                        }
+                    } else {
+                        return 10; // If any piece ahead, no further moves
+                    }
+                } else { // Going Diagonal
+                    if (board.getPiece(newPos) != null) {
+                        if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
+                            if (promotionFlag) {
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+                            } else {
+                                this.movesPossible.add(newMove);
+                            }
+                        }
+                    }
+                }
+            } else { // Is Black
+                if (direction == Direction.DOWN) {
+                    if (board.getPiece(newPos) == null) {
+                        if (promotionFlag) {
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+                        } else {
+                            this.movesPossible.add(newMove);
+                        }
+                    } else {
+                        return 10; // If any piece ahead, no further moves
+                    }
+                } else { // Going Diagonal
+                    if (board.getPiece(newPos) != null) {
+                        if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
+                            if (promotionFlag) {
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+                            } else {
+                                this.movesPossible.add(newMove);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return currentMoveNumber;
     }
 
     @Override
