@@ -290,8 +290,8 @@ public class ChessPiece {
             boolean promotionFlag,
             int currentMoveNumber
     ) {
-        if (board.getPiece(newPos) == null) {
-            if (promotionFlag) {
+        if (board.getPiece(newPos) == null && true) {
+            if (promotionFlag && true) {
                 this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
                 this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
                 this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
