@@ -290,15 +290,8 @@ public class ChessPiece {
             boolean promotionFlag,
             int currentMoveNumber
     ) {
-        if (board.getPiece(newPos) == null && true) {
-            if (promotionFlag && true) {
-                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
-                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
-                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
-                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
-            } else {
-                this.movesPossible.add(newMove);
-            }
+        if (board.getPiece(newPos) == null) {
+            addMoveForPawn(newMove, currPos, newPos, promotionFlag);
         } else {
             return 10; // If any piece ahead, no further moves
         }
@@ -314,15 +307,19 @@ public class ChessPiece {
     ) {
         if (board.getPiece(newPos) != null) {
             if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
-                if (promotionFlag) {
-                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
-                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
-                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
-                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
-                } else {
-                    this.movesPossible.add(newMove);
-                }
+                addMoveForPawn(newMove, currPos, newPos, promotionFlag);
             }
+        }
+    }
+
+    private void addMoveForPawn(ChessMove newMove, ChessPosition currPos, ChessPosition newPos, boolean promotionFlag) {
+        if (promotionFlag) {
+            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+        } else {
+            this.movesPossible.add(newMove);
         }
     }
 
