@@ -237,7 +237,14 @@ public class ChessPiece {
 
     }
 
-    private int handlePawnSearch(ChessBoard board, ChessPiece.Direction direction, ChessPosition currPos, ChessPosition newPos, ChessMove newMove, int currentMoveNumber) {
+    private int handlePawnSearch(
+            ChessBoard board,
+            ChessPiece.Direction direction,
+            ChessPosition currPos,
+            ChessPosition newPos,
+            ChessMove newMove,
+            int currentMoveNumber
+    ) {
 
         // Wierd Pawn Stuff
         boolean promotionFlag = false;
@@ -260,64 +267,65 @@ public class ChessPiece {
         ) {
             if (this.getTeamColor() == ChessGame.TeamColor.WHITE) {
                 if (direction == Direction.UP) {
-                    if (board.getPiece(newPos) == null) {
-                        if (promotionFlag) {
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
-                        } else {
-                            this.movesPossible.add(newMove);
-                        }
-                    } else {
-                        return 10; // If any piece ahead, no further moves
-                    }
+                    currentMoveNumber = testPawnStraightMove(board, newMove, currPos, newPos, promotionFlag, currentMoveNumber);
                 } else { // Going Diagonal
-                    if (board.getPiece(newPos) != null) {
-                        if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
-                            if (promotionFlag) {
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
-                            } else {
-                                this.movesPossible.add(newMove);
-                            }
-                        }
-                    }
+                    testPawnDiagonalMove(board, newMove, currPos, newPos, promotionFlag);
                 }
             } else { // Is Black
                 if (direction == Direction.DOWN) {
-                    if (board.getPiece(newPos) == null) {
-                        if (promotionFlag) {
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
-                            this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
-                        } else {
-                            this.movesPossible.add(newMove);
-                        }
-                    } else {
-                        return 10; // If any piece ahead, no further moves
-                    }
+                    currentMoveNumber = testPawnStraightMove(board, newMove, currPos, newPos, promotionFlag, currentMoveNumber);
                 } else { // Going Diagonal
-                    if (board.getPiece(newPos) != null) {
-                        if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
-                            if (promotionFlag) {
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
-                                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
-                            } else {
-                                this.movesPossible.add(newMove);
-                            }
-                        }
-                    }
+                    testPawnDiagonalMove(board, newMove, currPos, newPos, promotionFlag);
                 }
             }
         }
         return currentMoveNumber;
     }
+
+    private int testPawnStraightMove(
+            ChessBoard board,
+            ChessMove newMove,
+            ChessPosition currPos,
+            ChessPosition newPos,
+            boolean promotionFlag,
+            int currentMoveNumber
+    ) {
+        if (board.getPiece(newPos) == null) {
+            if (promotionFlag) {
+                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+                this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+            } else {
+                this.movesPossible.add(newMove);
+            }
+        } else {
+            return 10; // If any piece ahead, no further moves
+        }
+        return currentMoveNumber;
+    }
+
+    private void testPawnDiagonalMove(
+            ChessBoard board,
+            ChessMove newMove,
+            ChessPosition currPos,
+            ChessPosition newPos,
+            boolean promotionFlag
+    ) {
+        if (board.getPiece(newPos) != null) {
+            if (board.getPiece(newPos).getTeamColor() != this.getTeamColor()) {
+                if (promotionFlag) {
+                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.QUEEN));
+                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.BISHOP));
+                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.KNIGHT));
+                    this.movesPossible.add(new ChessMove(currPos, newPos, PieceType.ROOK));
+                } else {
+                    this.movesPossible.add(newMove);
+                }
+            }
+        }
+    }
+
 
     @Override
     public boolean equals(Object o) {
