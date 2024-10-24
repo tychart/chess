@@ -205,6 +205,8 @@ public class ChessPiece {
                 }
 
             } else {
+                // Modifying the 'i' allows this function to stop at the
+                // first enemy rather than phasing through them
                 i = handlePawnSearch(board, direction, currPos, newPos, newMove, i);
             }
         }
