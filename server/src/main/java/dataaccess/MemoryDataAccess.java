@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.protobuf.ServiceException;
+
 import model.*;
 
 public class MemoryDataAccess implements DataAccess {
