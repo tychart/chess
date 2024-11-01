@@ -70,7 +70,7 @@ public class DatabaseManager {
         try (var connection = getConnection()) {
             Statement statement = connection.createStatement();
             statement.executeUpdate(createTableSQL.toString());
-            System.out.println("Table '" + tableName + "' created or already exists with structure: " + createTableSQL);
+//            System.out.println("Table '" + tableName + "' created or already exists with structure: " + createTableSQL);
 
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());

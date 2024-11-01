@@ -52,17 +52,7 @@ public class SqlDataAccess implements DataAccess {
     };
 
     public SqlDataAccess() {
-
-
-        try {
-            DatabaseManager.createDatabase();
-            DatabaseManager.createTable(USER_TABLE, userTableColumns);
-            DatabaseManager.createTable(AUTH_TABLE, authTableColumns);
-            DatabaseManager.createTable(GAME_TABLE, gameTableColumns);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
+        confirmDatabaseStructureExists();
     }
 
 //    public Pet addPet(Pet pet) throws ResponseException {
@@ -176,6 +166,7 @@ public class SqlDataAccess implements DataAccess {
 //    }
 
     public void addUser(UserData user) {
+        confirmDatabaseStructureExists();
         String insertQuery = String.format("INSERT INTO %s (username, password, email) VALUES (?, ?, ?)", USER_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
@@ -203,6 +194,7 @@ public class SqlDataAccess implements DataAccess {
 
 
     public UserData getUser(String username) {
+        confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, password, email FROM %s WHERE username = ?", USER_TABLE);
         UserData user = null;
 
@@ -234,6 +226,7 @@ public class SqlDataAccess implements DataAccess {
 
 
     public Map<String, UserData> getAllUsers() {
+        confirmDatabaseStructureExists();
         var userData = new UserData("stuff", "stuff", "Other stuff");
         var hashMap = new HashMap<String, UserData>();
 
@@ -274,8 +267,25 @@ public class SqlDataAccess implements DataAccess {
         String dropTableAuthData = String.format("DROP TABLE IF EXISTS %s", AUTH_TABLE);
         String dropTableGameData = String.format("DROP TABLE IF EXISTS %s", GAME_TABLE);
 
+        // Establish a connection to the database and execute the queries
+        try (Connection connection = DatabaseManager.getConnection();
+             Statement statement = connection.createStatement()) {
 
+            // Execute each drop table command
+            statement.executeUpdate(dropTableUsers);
+            System.out.println("User table dropped.");
+
+            statement.executeUpdate(dropTableAuthData);
+            System.out.println("Auth data table dropped.");
+
+            statement.executeUpdate(dropTableGameData);
+            System.out.println("Game data table dropped.");
+
+        } catch (DataAccessException | SQLException e) {
+            System.err.println("Error clearing database: " + e.getMessage());
+        }
     }
+
 
     public static void addPersonTest(String name, String email, int age) throws DataAccessException, SQLException {
         String insertQuery = "INSERT INTO people (name, email, age) VALUES (?, ?, ?)";
@@ -289,6 +299,18 @@ public class SqlDataAccess implements DataAccess {
             System.out.println(rowsInserted + " row(s) inserted.");
         }
     }
+
+    private void confirmDatabaseStructureExists() {
+        try {
+            DatabaseManager.createDatabase();
+            DatabaseManager.createTable(USER_TABLE, userTableColumns);
+            DatabaseManager.createTable(AUTH_TABLE, authTableColumns);
+            DatabaseManager.createTable(GAME_TABLE, gameTableColumns);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public void printDatabases() throws SQLException, DataAccessException {
         DatabaseManager.displayTable(USER_TABLE);
