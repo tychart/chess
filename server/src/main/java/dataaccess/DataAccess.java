@@ -23,9 +23,9 @@ public interface DataAccess {
     // Used for logging out a user
     void deleteAuthData(String authToken) throws ServiceException;
 
-    int getNextGameID();
+    int getNextGameID() throws ServiceException;
 
-    void addGame(GameData gameData);
+    void addGame(GameData gameData) throws ServiceException;
 
     GameData getGame(int gameID) throws ServiceException;
 
