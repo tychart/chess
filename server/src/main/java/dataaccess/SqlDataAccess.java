@@ -227,6 +227,32 @@ public class SqlDataAccess implements DataAccess {
 
     public Map<String, UserData> getAllUsers() {
         confirmDatabaseStructureExists();
+        String selectQuery = String.format("SELECT username, password, email FROM %s", USER_TABLE);
+
+        try (PreparedStatement preparedStatement = DatabaseManager
+                .getConnection()
+                .prepareStatement(selectQuery)
+        ) {
+
+
+            // Execute the query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Extract data and create a UserData object
+                    String userUsername = resultSet.getString("username");
+                    String userPassword = resultSet.getString("password");
+                    String userEmail = resultSet.getString("email");
+
+                    user = new UserData(userUsername, userPassword, userEmail);
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            System.out.println("Error retrieving user: " + e.getMessage());
+        }
+
+
+
+
         var userData = new UserData("stuff", "stuff", "Other stuff");
         var hashMap = new HashMap<String, UserData>();
 
