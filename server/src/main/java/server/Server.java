@@ -14,27 +14,13 @@ public class Server {
 
     int port = 0;
     private final Gson gson = new Gson();
-    private DataAccess dataAccess;
-    private Service service;
+    private final DataAccess dataAccess = new SqlDataAccess();
+    private final Service service = new Service(dataAccess);
 
-    public Server() {
-        try {
-            dataAccess = new SqlDataAccess();
-            service = new Service(dataAccess);
-        } catch (Exception e) {
-            System.out.println("ERROR + " + e.getMessage());
-        }
-    }
+    public Server() {}
 
     public Server(int port) {
         this.port = port;
-
-        try {
-            dataAccess = new SqlDataAccess();
-            service = new Service(dataAccess);
-        } catch (Exception e) {
-            System.out.println("ERROR + " + e.getMessage());
-        }
     }
 
     public int run(int desiredPort) {

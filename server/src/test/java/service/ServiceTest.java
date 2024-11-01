@@ -5,6 +5,7 @@ import com.google.protobuf.ServiceException;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 
+import dataaccess.SqlDataAccess;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +26,7 @@ import chess.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ServiceTest {
-    static DataAccess dataAccess = new MemoryDataAccess();
+    static DataAccess dataAccess = new SqlDataAccess();
     static Service service = new Service(dataAccess);
     private final Gson gson = new Gson();
 

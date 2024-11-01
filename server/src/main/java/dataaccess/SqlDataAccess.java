@@ -51,13 +51,18 @@ public class SqlDataAccess implements DataAccess {
             "gameJson JSON NOT NULL"
     };
 
-    public SqlDataAccess() throws DataAccessException {
+    public SqlDataAccess() {
 
 
-        DatabaseManager.createDatabase();
-        DatabaseManager.createTable(USER_TABLE, userTableColumns);
-        DatabaseManager.createTable(AUTH_TABLE, authTableColumns);
-        DatabaseManager.createTable(GAME_TABLE, gameTableColumns);
+        try {
+            DatabaseManager.createDatabase();
+            DatabaseManager.createTable(USER_TABLE, userTableColumns);
+            DatabaseManager.createTable(AUTH_TABLE, authTableColumns);
+            DatabaseManager.createTable(GAME_TABLE, gameTableColumns);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
 //    public Pet addPet(Pet pet) throws ResponseException {
@@ -171,7 +176,7 @@ public class SqlDataAccess implements DataAccess {
 //    }
 
     public void addUser(UserData user) {
-        String insertQuery = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+        String insertQuery = String.format("INSERT INTO %s (username, password, email) VALUES (?, ?, ?)", USER_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
                 .getConnection()
@@ -198,8 +203,35 @@ public class SqlDataAccess implements DataAccess {
 
 
     public UserData getUser(String username) {
-        return new UserData("stuff", "stuff", "Other stuff");
+        String selectQuery = String.format("SELECT username, password, email FROM %s WHERE username = ?", USER_TABLE);
+        UserData user = null;
+
+        try (PreparedStatement preparedStatement = DatabaseManager
+                .getConnection()
+                .prepareStatement(selectQuery)
+        ) {
+
+            // Set the username parameter
+            preparedStatement.setString(1, username);
+
+            // Execute the query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    // Extract data and create a UserData object
+                    String userUsername = resultSet.getString("username");
+                    String userPassword = resultSet.getString("password");
+                    String userEmail = resultSet.getString("email");
+
+                    user = new UserData(userUsername, userPassword, userEmail);
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            System.out.println("Error retrieving user: " + e.getMessage());
+        }
+
+        return user;
     }
+
 
     public Map<String, UserData> getAllUsers() {
         var userData = new UserData("stuff", "stuff", "Other stuff");
@@ -238,6 +270,11 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public void clearDatabase() {
+        String dropTableUsers = String.format("DROP TABLE IF EXISTS %s", USER_TABLE);
+        String dropTableAuthData = String.format("DROP TABLE IF EXISTS %s", AUTH_TABLE);
+        String dropTableGameData = String.format("DROP TABLE IF EXISTS %s", GAME_TABLE);
+
+
     }
 
     public static void addPersonTest(String name, String email, int age) throws DataAccessException, SQLException {
