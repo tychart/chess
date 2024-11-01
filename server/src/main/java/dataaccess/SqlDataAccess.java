@@ -338,7 +338,7 @@ public class SqlDataAccess implements DataAccess {
 
     public int getNextGameID() throws ServiceException {
         confirmDatabaseStructureExists();
-        String query = String.format("SELECT MAX(gameID) FROM %s", GAME_TABLE);
+        String query = String.format("SELECT gameID FROM %s", GAME_TABLE);
 
         int expectedID = 1; // Start at the minimum game ID
 
@@ -394,7 +394,34 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public GameData getGame(int gameID) throws ServiceException {
-        return new GameData(1, "usr1", "usr2", "game", new ChessGame());
+        confirmDatabaseStructureExists();
+        String query = String.format("SELECT * FROM %s WHERE gameID = ?", GAME_TABLE);
+        GameData outGameData = null;
+
+        try (PreparedStatement preparedStatement = DatabaseManager.getConnection().prepareStatement(query);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+            // Execute the query
+            if (resultSet.next()) {
+                int retrievedGameID = resultSet.getInt("gameID");
+                String whiteUsername = resultSet.getString("whiteUsername");
+                String blackUsername = resultSet.getString("blackUsername");
+                String gameName = resultSet.getString("gameName");
+                String gameJson = resultSet.getString("gameJson");
+                outGameData = new GameData(retrievedGameID, whiteUsername, blackUsername, gameName, gson.fromJson(gameJson, ChessGame.class));
+                return outGameData;
+            } else {
+                throw new ServiceException("Error: Game with ID " + gameID + " not found");
+            }
+
+
+
+        } catch (DataAccessException | SQLException e) {
+            throw new ServiceException("Error retreving IDs: " + e.getMessage());
+        }
+
+
+//        return new GameData(1, "usr1", "usr2", "game", new ChessGame());
     }
 
     public Map<Integer, GameData> getAllGames() {
