@@ -49,6 +49,35 @@ public class DatabaseManager {
     }
 
     /**
+     * Creates the database if it does not already exist.
+     */
+    static void createTable(String tableName, String[] columns) throws DataAccessException {
+        createDatabase();
+//        String databaseURL = CONNECTION_URL + "/" + DATABASE_NAME;
+        StringBuilder createTableSQL = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
+        createTableSQL.append(tableName);
+        createTableSQL.append(" (");
+
+        for (int columnIndex = 0; columnIndex < columns.length; columnIndex++) {
+            createTableSQL.append(columns[columnIndex]);
+            if (columnIndex < columns.length - 1) {
+                createTableSQL.append(",");
+            }
+        }
+
+        createTableSQL.append(")");
+
+        try (var connection = getConnection()) {
+            Statement statement = connection.createStatement();
+            statement.executeUpdate(createTableSQL.toString());
+            System.out.println("Table '" + tableName + "' created or already exists with structure: " + createTableSQL);
+
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
+    }
+
+    /**
      * Create a connection to the database and sets the catalog based upon the
      * properties specified in db.properties. Connections to the database should
      * be short-lived, and you must close the connection when you are done with it.
@@ -68,5 +97,41 @@ public class DatabaseManager {
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
+    }
+
+
+    static void displayTable(String tableName) throws DataAccessException, SQLException {
+        Connection connection = getConnection();
+        Statement statement = connection.createStatement();
+
+        // Execute a query to retrieve all rows from the specified table
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
+
+        // Get the ResultSet metadata
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columnCount = metaData.getColumnCount();
+
+        // Display column names above the data
+        System.out.println("Columns in table " + tableName + ":");
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.format("%-25s", metaData.getColumnLabel(i)); // Format each column name
+        }
+        System.out.println(); // New line after headers
+
+        // Display a separator line (optional)
+        System.out.println(new String(new char[columnCount * 20]).replace("\0", "-")); // Separator line
+
+        // Display rows with formatting
+        while (resultSet.next()) {
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.format("%-25s", resultSet.getString(i)); // Format each column value
+            }
+            System.out.println();
+        }
+
+        // Close resources
+        resultSet.close();
+        statement.close();
+        connection.close();
     }
 }

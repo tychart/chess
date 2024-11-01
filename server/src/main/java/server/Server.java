@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ServiceException;
+import dataaccess.SqlDataAccess;
 import spark.*;
 
 import dataaccess.DataAccess;
@@ -13,14 +14,27 @@ public class Server {
 
     int port = 0;
     private final Gson gson = new Gson();
-    private final DataAccess dataAccess = new MemoryDataAccess();
-    private final Service service = new Service(dataAccess);
+    private DataAccess dataAccess;
+    private Service service;
 
     public Server() {
+        try {
+            dataAccess = new SqlDataAccess();
+            service = new Service(dataAccess);
+        } catch (Exception e) {
+            System.out.println("ERROR + " + e.getMessage());
+        }
     }
 
     public Server(int port) {
         this.port = port;
+
+        try {
+            dataAccess = new SqlDataAccess();
+            service = new Service(dataAccess);
+        } catch (Exception e) {
+            System.out.println("ERROR + " + e.getMessage());
+        }
     }
 
     public int run(int desiredPort) {
