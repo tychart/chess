@@ -228,6 +228,7 @@ public class SqlDataAccess implements DataAccess {
     public Map<String, UserData> getAllUsers() {
         confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, password, email FROM %s", USER_TABLE);
+        Map<String, UserData> users = new HashMap<>();
 
         try (PreparedStatement preparedStatement = DatabaseManager
                 .getConnection()
@@ -237,13 +238,13 @@ public class SqlDataAccess implements DataAccess {
 
             // Execute the query
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
+                while (resultSet.next()) {
                     // Extract data and create a UserData object
                     String userUsername = resultSet.getString("username");
                     String userPassword = resultSet.getString("password");
                     String userEmail = resultSet.getString("email");
 
-                    user = new UserData(userUsername, userPassword, userEmail);
+                    users.put(userUsername, new UserData(userUsername, userPassword, userEmail));
                 }
             }
         } catch (DataAccessException | SQLException e) {
@@ -253,11 +254,11 @@ public class SqlDataAccess implements DataAccess {
 
 
 
-        var userData = new UserData("stuff", "stuff", "Other stuff");
-        var hashMap = new HashMap<String, UserData>();
-
-        hashMap.put("Hi", userData);
-        return hashMap;
+//        var userData = new UserData("stuff", "stuff", "Other stuff");
+//        var hashMap = new HashMap<String, UserData>();
+//
+//        hashMap.put("Hi", userData);
+        return users;
     }
 
     public void addAuthData(AuthData authData) throws ServiceException {
