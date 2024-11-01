@@ -82,4 +82,14 @@ public class DataAccessTests {
 
     }
 
+    @Test
+    void addGameSuccess() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+        assertNotNull(retrievedGameData);
+    }
+
 }
