@@ -98,40 +98,4 @@ public class DatabaseManager {
             throw new DataAccessException(e.getMessage());
         }
     }
-
-
-    static void displayTable(String tableName) throws DataAccessException, SQLException {
-        Connection connection = getConnection();
-        Statement statement = connection.createStatement();
-
-        // Execute a query to retrieve all rows from the specified table
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM " + tableName);
-
-        // Get the ResultSet metadata
-        ResultSetMetaData metaData = resultSet.getMetaData();
-        int columnCount = metaData.getColumnCount();
-
-        // Display column names above the data
-        System.out.println("Columns in table " + tableName + ":");
-        for (int i = 1; i <= columnCount; i++) {
-            System.out.format("%-25s", metaData.getColumnLabel(i)); // Format each column name
-        }
-        System.out.println(); // New line after headers
-
-        // Display a separator line (optional)
-        System.out.println(new String(new char[columnCount * 20]).replace("\0", "-")); // Separator line
-
-        // Display rows with formatting
-        while (resultSet.next()) {
-            for (int i = 1; i <= columnCount; i++) {
-                System.out.format("%-25s", resultSet.getString(i)); // Format each column value
-            }
-            System.out.println();
-        }
-
-        // Close resources
-        resultSet.close();
-        statement.close();
-        connection.close();
-    }
 }

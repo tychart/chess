@@ -31,9 +31,6 @@ public class DataAccessTests {
         UserData newUser = new UserData("username", "badpass", "myemail");
         dataAccess.addUser(newUser);
         UserData retrievedUser = dataAccess.getUser(newUser.username());
-//        System.out.println(jsonReturn);
-//        Map<String, UserData> allUsers = service.getAllUsers();
-//        assertEquals(1, allUsers.size());
         assertEquals(newUser, retrievedUser);
     }
 
