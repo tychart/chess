@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DataAccessTests {
     static DataAccess dataAccess = new SqlDataAccess();
-//    static Service service = new Service(dataAccess);
     private final Gson gson = new Gson();
 
     @BeforeEach
@@ -240,17 +239,43 @@ public class DataAccessTests {
     @Test
     void getAllGamesSuccess() throws Exception {
         UserData user1   = new UserData("username", "badpass", "myemail");
-        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        GameData newGameData1 = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        GameData newGameData2 = new GameData(2, "wuser", "buser", "game2", new ChessGame());
         dataAccess.addUser(user1);
-        dataAccess.addGame(newGameData);
-        GameData retrievedGameData = dataAccess.getGame(1);
+        dataAccess.addGame(newGameData1);
+        dataAccess.addGame(newGameData2);
+        var retrievedGameData = dataAccess.getAllGames();
 
         System.out.println(retrievedGameData);
 
-        assertEquals(retrievedGameData.gameID(), newGameData.gameID());
-        assertEquals(retrievedGameData.whiteUsername(), newGameData.whiteUsername());
-        assertEquals(retrievedGameData.blackUsername(), newGameData.blackUsername());
-        assertEquals(retrievedGameData.gameName(), newGameData.gameName());
+        assertNotNull(retrievedGameData);
+    }
+
+    @Test
+    void getAllGamesFail() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData1 = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        GameData newGameData2 = new GameData(2, "wuser", "buser", null, new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData1);
+
+        assertThrows(ServiceException.class, () -> dataAccess.addGame(newGameData2));
+
+        var retrievedGameData = dataAccess.getAllGames();
+        System.out.println(retrievedGameData);
+        assertNotNull(retrievedGameData);
+    }
+
+    @Test
+    void clearDatabaseSuccess() throws Exception {
+        UserData user1    = new UserData("username", "badpass", "myemail");
+        GameData newGameData1  = new GameData(1, "wuser", "buser", "null", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData1);
+
+        dataAccess.clearDatabase();
+
+        assertNull(dataAccess.getUser(user1.username()));
     }
 
 }
