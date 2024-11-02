@@ -38,7 +38,7 @@ public class SqlDataAccess implements DataAccess {
             "gameID INT AUTO_INCREMENT PRIMARY KEY",
             "whiteUsername VARCHAR(64)",
             "blackUsername VARCHAR(64)",
-            "gameName VARCHAR(64)",
+            "gameName VARCHAR(64) NOT NULL",
             "gameJson JSON NOT NULL"
     };
 
@@ -46,7 +46,7 @@ public class SqlDataAccess implements DataAccess {
         confirmDatabaseStructureExists();
     }
 
-    public void addUser(UserData user) {
+    public void addUser(UserData user) throws ServiceException {
         confirmDatabaseStructureExists();
         String insertQuery = String.format("INSERT INTO %s (username, password, email) VALUES (?, ?, ?)", USER_TABLE);
 
@@ -65,16 +65,16 @@ public class SqlDataAccess implements DataAccess {
             if (rowsAffected > 0) {
                 System.out.println("User added successfully.");
             } else {
-                System.out.println("Failed to add user.");
+                throw new ServiceException("Error adding user");
             }
 
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Error adding user: " + e.getMessage());
+            throw new ServiceException("Error adding user" + e.getMessage());
         }
     }
 
 
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws ServiceException {
         confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, password, email FROM %s WHERE username = ?", USER_TABLE);
         UserData user = null;
@@ -99,14 +99,14 @@ public class SqlDataAccess implements DataAccess {
                 }
             }
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Error retrieving user: " + e.getMessage());
+            throw new ServiceException("Error retrieving user: " + e.getMessage());
         }
 
         return user;
     }
 
 
-    public Map<String, UserData> getAllUsers() {
+    public Map<String, UserData> getAllUsers() throws ServiceException {
         confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, password, email FROM %s", USER_TABLE);
         Map<String, UserData> users = new HashMap<>();
@@ -128,7 +128,7 @@ public class SqlDataAccess implements DataAccess {
                 }
             }
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Error retrieving user: " + e.getMessage());
+            throw new ServiceException("Error retrieving user: " + e.getMessage());
         }
         return users;
     }
@@ -151,11 +151,11 @@ public class SqlDataAccess implements DataAccess {
             if (rowsAffected > 0) {
                 System.out.println("User added successfully.");
             } else {
-                System.out.println("Failed to add user.");
+                throw new ServiceException("Failed to add user.");
             }
 
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Error adding authData: " + e.getMessage());
+            throw new ServiceException("Error adding authData: " + e.getMessage());
         }
     }
 
@@ -271,7 +271,7 @@ public class SqlDataAccess implements DataAccess {
             if (rowsAffected > 0) {
                 System.out.println("Game added successfully.");
             } else {
-                System.out.println("Failed to add game.");
+                throw new ServiceException("Failed to add game.");
             }
 
         } catch (DataAccessException | SQLException e) {
@@ -347,7 +347,7 @@ public class SqlDataAccess implements DataAccess {
         }
     }
 
-    public Map<Integer, GameData> getAllGames() {
+    public Map<Integer, GameData> getAllGames() throws ServiceException {
         confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT * FROM %s", GAME_TABLE);
         Map<Integer, GameData> games = new HashMap<>();
@@ -379,7 +379,7 @@ public class SqlDataAccess implements DataAccess {
                 }
             }
         } catch (DataAccessException | SQLException e) {
-            System.out.println("Error retrieving games: " + e.getMessage());
+            throw new ServiceException("Error retrieving games: " + e.getMessage());
         }
         return games;
 

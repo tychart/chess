@@ -87,7 +87,7 @@ public class Service {
         return "{}";
     }
 
-    public Map<String, UserData> getAllUsers() {
+    public Map<String, UserData> getAllUsers() throws ServiceException {
         return dataAccess.getAllUsers();
     }
 

@@ -8,13 +8,13 @@ import java.util.Map;
 public interface DataAccess {
 
     // Add a new user to the database
-    void addUser(UserData user);
+    void addUser(UserData user) throws ServiceException;
 
 
     // Get a user by their username
-    UserData getUser(String username);
+    UserData getUser(String username) throws ServiceException;
 
-    Map<String, UserData> getAllUsers();
+    Map<String, UserData> getAllUsers() throws ServiceException;
 
     void addAuthData(AuthData authData) throws ServiceException;
 
@@ -31,7 +31,7 @@ public interface DataAccess {
 
     GameData getGame(int gameID) throws ServiceException;
 
-    Map<Integer, GameData> getAllGames();
+    Map<Integer, GameData> getAllGames() throws ServiceException;
 
     void clearDatabase();
 }

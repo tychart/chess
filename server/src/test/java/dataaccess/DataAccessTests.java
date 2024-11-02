@@ -35,13 +35,47 @@ public class DataAccessTests {
     }
 
     @Test
-    void listAllUsersSuccess() throws Exception {
+    void addUserFail() throws Exception {
+        UserData newUser = new UserData("username", null, "myemail");
+        assertThrows(ServiceException.class, () -> dataAccess.addUser(newUser));
+    }
+
+    @Test
+    void getUserSuccess() throws Exception {
+        UserData newUser = new UserData("username", "badpass", "myemail");
+        dataAccess.addUser(newUser);
+        UserData retrievedUser = dataAccess.getUser(newUser.username());
+        assertEquals(newUser, retrievedUser);
+    }
+
+    @Test
+    void getUserFail() throws Exception {
+        UserData newUser = new UserData("username", "badpass", "myemail");
+        dataAccess.addUser(newUser);
+        UserData returnedUser = dataAccess.getUser("Incorrect Username");
+        assertNull(returnedUser);
+    }
+
+    @Test
+    void getAllUsersSuccess() throws Exception {
         UserData user1  = new UserData("username", "badpass", "myemail");
         UserData user2  = new UserData("username2", "badpass", "myemail");
         dataAccess.addUser(user1);
         dataAccess.addUser(user2);
         System.out.println(dataAccess.getAllUsers());
     }
+
+    @Test
+    void getAllUsersFail() throws Exception {
+        UserData user1  = new UserData("username", "badpass", "myemail");
+        UserData user2  = new UserData("username2", "badpass", "myemail");
+        UserData user3  = new UserData(null, "badpass", "myemail");
+        dataAccess.addUser(user1);
+        dataAccess.addUser(user2);
+        System.out.println(dataAccess.getAllUsers());
+        assertThrows(ServiceException.class, () -> dataAccess.addUser(user3));
+    }
+
 
     @Test
     void addAuthSuccess() throws Exception {
@@ -52,6 +86,35 @@ public class DataAccessTests {
         UserData retrievedUser = dataAccess.getUser(user1.username());
         UserData retrievedUserByToken = dataAccess.authenticateUser(newAuthData.authToken());
         assertEquals(retrievedUser, retrievedUserByToken);
+    }
+
+    @Test
+    void addAuthFail() throws Exception {
+        UserData user1  = new UserData("username", "badpass", "myemail");
+        AuthData newAuthData = new AuthData(null, "supernotcorrectauthtoken");
+        dataAccess.addUser(user1);
+        assertThrows(ServiceException.class, () -> dataAccess.addAuthData(newAuthData));
+    }
+
+    @Test
+    void authenticateUserSuccess() throws Exception {
+        UserData user1  = new UserData("username", "badpass", "myemail");
+        AuthData newAuthData = new AuthData("username", "supernotcorrectauthtoken");
+        dataAccess.addUser(user1);
+        dataAccess.addAuthData(newAuthData);
+        UserData retrievedUser = dataAccess.getUser(user1.username());
+        UserData retrievedUserByToken = dataAccess.authenticateUser(newAuthData.authToken());
+        assertEquals(retrievedUser, retrievedUserByToken);
+    }
+
+    @Test
+    void authenticateUserFail() throws Exception {
+        UserData user1  = new UserData("username", "badpass", "myemail");
+        AuthData newAuthData = new AuthData("username", "currentauthtoken");
+        dataAccess.addUser(user1);
+        dataAccess.addAuthData(newAuthData);
+        UserData retrievedUser = dataAccess.getUser(user1.username());
+        assertThrows(ServiceException.class, () -> dataAccess.authenticateUser("incorrectauthtoken"));
     }
 
     @Test
@@ -69,6 +132,53 @@ public class DataAccessTests {
     }
 
     @Test
+    void removeAuthFail() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        AuthData newAuthData  = new AuthData("username", "supernotcorrectauthtoken");
+        dataAccess.addUser(user1);
+        dataAccess.addAuthData(newAuthData);
+        UserData retrievedUserBeforeDeletingToken = dataAccess.getUser(user1.username());
+
+        assertThrows(ServiceException.class, () -> dataAccess.deleteAuthData("wrongauthtoken"));
+    }
+
+    @Test
+    void getNextGameIDSuccess() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+
+        System.out.println(retrievedGameData);
+
+        assertEquals(retrievedGameData.gameID(), newGameData.gameID());
+        assertEquals(retrievedGameData.whiteUsername(), newGameData.whiteUsername());
+        assertEquals(retrievedGameData.blackUsername(), newGameData.blackUsername());
+        assertEquals(retrievedGameData.gameName(), newGameData.gameName());
+
+        assertEquals(dataAccess.getNextGameID(), 2);
+    }
+
+    @Test
+    void getNextGameIDFail() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+
+        System.out.println(retrievedGameData);
+
+        assertEquals(retrievedGameData.gameID(), newGameData.gameID());
+        assertEquals(retrievedGameData.whiteUsername(), newGameData.whiteUsername());
+        assertEquals(retrievedGameData.blackUsername(), newGameData.blackUsername());
+        assertEquals(retrievedGameData.gameName(), newGameData.gameName());
+
+        assertNotEquals(dataAccess.getNextGameID(), 3);
+    }
+
+    @Test
     void addGameSuccess() throws Exception {
         UserData user1   = new UserData("username", "badpass", "myemail");
         GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
@@ -76,6 +186,55 @@ public class DataAccessTests {
         dataAccess.addGame(newGameData);
         GameData retrievedGameData = dataAccess.getGame(1);
         assertNotNull(retrievedGameData);
+    }
+
+    @Test
+    void addGameFail() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, null, null, null, new ChessGame());
+        dataAccess.addUser(user1);
+        assertThrows(ServiceException.class, () -> dataAccess.addGame(newGameData));
+    }
+
+    @Test
+    void deleteGameSuccess() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+        dataAccess.deleteGame(1);
+        assertNotNull(retrievedGameData);
+    }
+
+    @Test
+    void deleteGameFail() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+        dataAccess.deleteGame(1);
+        assertThrows(ServiceException.class, () -> dataAccess.getGame(1));
+    }
+
+    @Test
+    void getGameSuccess() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+        assertNotNull(retrievedGameData);
+    }
+
+    @Test
+    void getGameFail() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        assertThrows(ServiceException.class, () -> dataAccess.getGame(2));
     }
 
     @Test
