@@ -27,6 +27,8 @@ public interface DataAccess {
 
     void addGame(GameData gameData) throws ServiceException;
 
+    void deleteGame(int gameID) throws ServiceException;
+
     GameData getGame(int gameID) throws ServiceException;
 
     Map<Integer, GameData> getAllGames();

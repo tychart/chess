@@ -366,6 +366,13 @@ public class SqlDataAccess implements DataAccess {
 
     public void addGame(GameData gameData) throws ServiceException {
         confirmDatabaseStructureExists();
+
+        try {
+            deleteGame(gameData.gameID());
+        } catch (ServiceException e) {
+            // Ignore, this is just if a game is being updated
+        }
+
         String query = String.format("INSERT INTO %s (gameID, whiteUsername, blackUsername, gameName, gameJson) VALUES (?, ?, ?, ?, ?)", GAME_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
@@ -377,8 +384,8 @@ public class SqlDataAccess implements DataAccess {
             preparedStatement.setInt(1, gameData.gameID());
             preparedStatement.setString(2, gameData.whiteUsername());
             preparedStatement.setString(3, gameData.blackUsername());
-            preparedStatement.setString(3, gameData.gameName());
-            preparedStatement.setString(4, gson.toJson(gameData.game()));
+            preparedStatement.setString(4, gameData.gameName());
+            preparedStatement.setString(5, gson.toJson(gameData.game()));
 
             // Execute the insert statement
             int rowsAffected = preparedStatement.executeUpdate();
@@ -393,41 +400,95 @@ public class SqlDataAccess implements DataAccess {
         }
     }
 
+    @Override
+    public void deleteGame(int gameID) throws ServiceException {
+        confirmDatabaseStructureExists();
+        String query = String.format("DELETE FROM %s where gameID = ?", GAME_TABLE);
+
+        try (PreparedStatement preparedStatement = DatabaseManager
+                .getConnection()
+                .prepareStatement(query)
+        ) {
+
+            // Set the parameters for the prepared statement
+            preparedStatement.setInt(1, gameID);
+
+            // Execute the insert statement
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Game successfully deleted.");
+            } else {
+                throw new ServiceException("Error deleting game");
+            }
+
+        } catch (DataAccessException | SQLException e) {
+            throw new ServiceException("Error deleting game: " + e.getMessage());
+        }
+    }
+
     public GameData getGame(int gameID) throws ServiceException {
         confirmDatabaseStructureExists();
         String query = String.format("SELECT * FROM %s WHERE gameID = ?", GAME_TABLE);
         GameData outGameData = null;
 
-        try (PreparedStatement preparedStatement = DatabaseManager.getConnection().prepareStatement(query);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+        try (PreparedStatement preparedStatement = DatabaseManager
+                .getConnection()
+                .prepareStatement(query)
+        ) {
 
-            // Execute the query
-            if (resultSet.next()) {
-                int retrievedGameID = resultSet.getInt("gameID");
-                String whiteUsername = resultSet.getString("whiteUsername");
-                String blackUsername = resultSet.getString("blackUsername");
-                String gameName = resultSet.getString("gameName");
-                String gameJson = resultSet.getString("gameJson");
-                outGameData = new GameData(retrievedGameID, whiteUsername, blackUsername, gameName, gson.fromJson(gameJson, ChessGame.class));
-                return outGameData;
-            } else {
-                throw new ServiceException("Error: Game with ID " + gameID + " not found");
+            // Set the parameters for the prepared statement
+            preparedStatement.setInt(1, gameID);
+
+            // Execute the query and obtain the result set
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                // Execute the query
+                if (resultSet.next()) {
+                    int retrievedGameID = resultSet.getInt("gameID");
+                    String whiteUsername = resultSet.getString("whiteUsername");
+                    String blackUsername = resultSet.getString("blackUsername");
+                    String gameName = resultSet.getString("gameName");
+                    String gameJson = resultSet.getString("gameJson");
+                    outGameData = new GameData(retrievedGameID, whiteUsername, blackUsername, gameName, gson.fromJson(gameJson, ChessGame.class));
+                    return outGameData;
+                } else {
+                    throw new ServiceException("Error: Game with ID " + gameID + " not found");
+                }
             }
-
-
-
         } catch (DataAccessException | SQLException e) {
             throw new ServiceException("Error retreving IDs: " + e.getMessage());
         }
-
-
-//        return new GameData(1, "usr1", "usr2", "game", new ChessGame());
     }
 
     public Map<Integer, GameData> getAllGames() {
-        var map = new HashMap<Integer, GameData>();
-        map.put(1, new GameData(1, "usr1", "usr2", "game", new ChessGame()));
-        return map;
+        confirmDatabaseStructureExists();
+        String selectQuery = String.format("SELECT * FROM %s", GAME_TABLE);
+        Map<Integer, GameData> games = new HashMap<>();
+
+        try (PreparedStatement preparedStatement = DatabaseManager
+                .getConnection()
+                .prepareStatement(selectQuery)
+        ) {
+
+            // Execute the query
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    // Extract data and create a UserData object
+                    int retrievedGameID = resultSet.getInt("gameID");
+                    String whiteUsername = resultSet.getString("whiteUsername");
+                    String blackUsername = resultSet.getString("blackUsername");
+                    String gameName = resultSet.getString("gameName");
+                    String gameJson = resultSet.getString("gameJson");
+                    GameData outGameData = new GameData(retrievedGameID, whiteUsername, blackUsername, gameName, gson.fromJson(gameJson, ChessGame.class));
+
+                    games.put(retrievedGameID, outGameData);
+                }
+            }
+        } catch (DataAccessException | SQLException e) {
+            System.out.println("Error retrieving games: " + e.getMessage());
+        }
+        return games;
+
     }
 
     public void clearDatabase() {

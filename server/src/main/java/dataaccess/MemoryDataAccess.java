@@ -71,6 +71,11 @@ public class MemoryDataAccess implements DataAccess {
     }
 
     @Override
+    public void deleteGame(int gameID) throws ServiceException {
+        this.gameDataTable.remove(gameID);
+    }
+
+    @Override
     public GameData getGame(int gameID) throws ServiceException {
         GameData gameData = this.gameDataTable.get(gameID);
         if (gameData == null) {

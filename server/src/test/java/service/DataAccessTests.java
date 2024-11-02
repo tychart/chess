@@ -92,4 +92,20 @@ public class DataAccessTests {
         assertNotNull(retrievedGameData);
     }
 
+    @Test
+    void getAllGamesSuccess() throws Exception {
+        UserData user1   = new UserData("username", "badpass", "myemail");
+        GameData newGameData = new GameData(1, "wuser", "buser", "game1", new ChessGame());
+        dataAccess.addUser(user1);
+        dataAccess.addGame(newGameData);
+        GameData retrievedGameData = dataAccess.getGame(1);
+
+        System.out.println(retrievedGameData);
+
+        assertEquals(retrievedGameData.gameID(), newGameData.gameID());
+        assertEquals(retrievedGameData.whiteUsername(), newGameData.whiteUsername());
+        assertEquals(retrievedGameData.blackUsername(), newGameData.blackUsername());
+        assertEquals(retrievedGameData.gameName(), newGameData.gameName());
+    }
+
 }
