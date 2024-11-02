@@ -1,4 +1,4 @@
-package service;
+package dataaccess;
 
 
 import com.google.protobuf.ServiceException;
@@ -7,21 +7,10 @@ import dataaccess.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import com.google.gson.Gson;
 import dataaccess.DataAccess;
-import dataaccess.MemoryDataAccess;
 import model.*;
-import org.junit.jupiter.api.BeforeEach;
-import service.Service;
 import chess.*;
 
 
