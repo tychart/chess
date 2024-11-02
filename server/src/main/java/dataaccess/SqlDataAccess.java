@@ -2,10 +2,6 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-//import exception.ResponseException;
-//import model.Pet;
-//import model.PetType;
-
 
 import java.sql.*;
 import java.util.Map;
@@ -15,7 +11,6 @@ import com.google.protobuf.ServiceException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-
 
 public class SqlDataAccess implements DataAccess {
 
@@ -411,19 +406,6 @@ public class SqlDataAccess implements DataAccess {
 
         } catch (DataAccessException | SQLException e) {
             System.err.println("Error clearing database: " + e.getMessage());
-        }
-    }
-
-    public static void addPersonTest(String name, String email, int age) throws DataAccessException, SQLException {
-        String insertQuery = "INSERT INTO people (name, email, age) VALUES (?, ?, ?)";
-
-        try (PreparedStatement preparedStatement = DatabaseManager.getConnection().prepareStatement(insertQuery)) {
-            preparedStatement.setString(1, name);
-            preparedStatement.setString(2, email);
-            preparedStatement.setInt(3, age);
-
-            int rowsInserted = preparedStatement.executeUpdate();
-            System.out.println(rowsInserted + " row(s) inserted.");
         }
     }
 
