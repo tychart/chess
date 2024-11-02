@@ -7,13 +7,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.google.gson.Gson;
-
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Map;
 
 import dataaccess.DataAccess;
 import model.*;
 import chess.*;
+
 
 
 public class Service {
@@ -41,13 +42,21 @@ public class Service {
             throw new ServiceException("Error: User already exists");
         }
 
-        dataAccess.addUser(newUser);
+        String hashedPassword = hashPassword(newUser.password());
 
-        AuthData authData = new AuthData(newUser.username(), generateAuthToken());
+        UserData safeUser = new UserData(
+                newUser.username(),
+                hashedPassword,
+                newUser.email()
+        );
+
+        dataAccess.addUser(safeUser);
+
+        AuthData authData = new AuthData(safeUser.username(), generateAuthToken());
 
         dataAccess.addAuthData(authData);
 
-        LoginResponse loginResponse = new LoginResponse(newUser.username(), authData.authToken());
+        LoginResponse loginResponse = new LoginResponse(safeUser.username(), authData.authToken());
 
         // Return a JSON response with username and authToken
         return gson.toJson(loginResponse);
@@ -56,7 +65,7 @@ public class Service {
     public String loginUser(UserData loginUser) throws ServiceException {
         if (
                 dataAccess.getUser(loginUser.username()) == null ||
-                        !dataAccess.getUser(loginUser.username()).password().equals(loginUser.password())
+                !comparePasswords(dataAccess.getUser(loginUser.username()).password(), loginUser.password())
         ) {
             throw new ServiceException("Error: Invalid username or password");
         }
@@ -158,6 +167,14 @@ public class Service {
             ));
         }
         return gson.toJson(new GameListResponse(gameSet));
+    }
+
+    String hashPassword(String plainTextPassword) {
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
+    }
+
+    boolean comparePasswords(String hashedPassword, String providedClearTextPassword) {
+        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
     }
 
 
