@@ -2,6 +2,7 @@ package dataaccess;
 
 // Docker command to launch sql database:
 // docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=strong_password -d mysql --max_connections=500
+// docker exec -it mysql /bin/mysql -u root -p
 
 import chess.ChessGame;
 import com.google.gson.Gson;
