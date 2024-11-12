@@ -24,8 +24,8 @@ public class ChessClient {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "signin" -> signIn(params);
-//                case "rescue" -> rescuePet(params);
+                case "login" -> login(params);
+                case "register" -> register(params);
 //                case "list" -> listPets();
 //                case "signout" -> signOut();
 //                case "adopt" -> adoptPet(params);
@@ -38,22 +38,49 @@ public class ChessClient {
         }
     }
 
-    public String signIn(String... params) throws ResponseException {
-        if (params.length >= 1) {
+    public String login(String... params) throws ResponseException {
+        if (params.length == 2) {
+
+            // Extract individual parameters by index
+            String username = params[0];
+            String password = params[1];
+
+            UserData loginUser = new UserData(username, password, null);
+            server.loginUser(loginUser);
+
             state = State.SIGNEDIN;
-            String visitorName = String.join("-", params);
-//            ws = new WebSocketFacade(serverUrl, notificationHandler);
-//            ws.enterPetShop(visitorName);
-            return String.format("You signed in as %s.", visitorName);
+
+
+            return String.format("Welcome %s! You are signed in, now you can join a game!", username);
         }
-        throw new ResponseException(400, "Expected: <yourname>");
+        throw new ResponseException(400, "Expected: <username> <password>");
+    }
+
+    public String register(String... params) throws ResponseException {
+        if (params.length == 3) {
+
+            // Extract individual parameters by index
+            String username = params[0];
+            String password = params[1];
+            String email = params[2];
+
+            // Create a new UserData object with these parameters
+            UserData newUser = new UserData(username, password, email);
+            server.registerUser(newUser);
+
+            state = State.SIGNEDIN;
+            return String.format("Welcome %s! You are signed in, now you can join a game!", username);
+        }
+        throw new ResponseException(400, "Expected: <username> <password> <email>");
     }
 
 
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    - signIn <yourname>
+                    - login <username> <password>
+                    - register <username> <password> <email>
+                    - help
                     - quit
                     """;
         }
