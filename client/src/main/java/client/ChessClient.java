@@ -24,18 +24,31 @@ public class ChessClient {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "login" -> login(params);
-                case "register" -> register(params);
+                case "login", "-l" -> login(params);
+                case "register", "-r" -> register(params);
 //                case "list" -> listPets();
 //                case "signout" -> signOut();
 //                case "adopt" -> adoptPet(params);
 //                case "adoptall" -> adoptAllPets();
-                case "quit" -> "quit";
+                case "quit", "-q" -> "quit";
                 default -> help();
             };
         } catch (ResponseException ex) {
             return ex.getMessage();
         }
+    }
+
+    private String unauthenicated(var params, String cmd) throws ResponseException {
+        return switch (cmd) {
+            case "login", "-l" -> login(params);
+            case "register", "-r" -> register(params);
+//                case "list" -> listPets();
+//                case "signout" -> signOut();
+//                case "adopt" -> adoptPet(params);
+//                case "adoptall" -> adoptAllPets();
+            case "quit", "-q" -> "quit";
+            default -> help();
+        };
     }
 
     public String login(String... params) throws ResponseException {
