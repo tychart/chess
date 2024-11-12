@@ -31,23 +31,33 @@ public class ServerFacade {
         return this.makeRequest("POST", path, loginUser, LoginResponse.class);
     }
 
-//    public LoginResponse logoutUser(String authToken) throws ResponseException {
-//        var path = "/session";
-//        return this.makeRequest("DELETE", path, loginUser, LoginResponse.class);
-//    }
-
-
-    public void deleteDatabase() throws ResponseException {
-        var path = "/db";
-        this.makeRequest("DELETE", path, null, null);
+    public void logoutUser(String authToken) throws ResponseException {
+        var path = "/session";
+        this.makeRequest("DELETE", path, null, null, authToken);
     }
 
+
+    public void deleteDatabase(String authToken) throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null, authToken);
+    }
+
+    // Version of makeRequest that does not require an authToken
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
+        return makeRequest(method, path, request, responseClass, null);
+    }
+
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws ResponseException {
         try {
             URL url = (new URI(serverUrl + path)).toURL();
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
             http.setRequestMethod(method);
             http.setDoOutput(true);
+
+            // Add the authToken to the request headers if it's provided
+            if (authToken != null) {
+                http.setRequestProperty("authorization", authToken);
+            }
 
             writeBody(request, http);
             http.connect();

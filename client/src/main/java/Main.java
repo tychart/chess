@@ -13,13 +13,16 @@ public class Main {
         System.out.println("Started Program");
 
         ServerFacade serverFacade = new ServerFacade("http://localhost:8080");
-        serverFacade.deleteDatabase();
+
         UserData newUser = new UserData("tychart", "badpass", "tyler@byu");
 
-        serverFacade.registerUser(newUser);
+//        LoginResponse authStuff = serverFacade.registerUser(newUser);
+
         LoginResponse authStuff = serverFacade.loginUser(newUser);
         String currToken = authStuff.authToken();
         System.out.println(authStuff);
+        serverFacade.logoutUser(currToken);
+//        serverFacade.deleteDatabase(currToken);
 
 //        serverFacade.logoutUser(currToken);
 
