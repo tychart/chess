@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.URL;
 
 import exception.ResponseException;
+import model.*;
 
 public class ServerFacade {
 
@@ -20,12 +21,26 @@ public class ServerFacade {
         serverUrl = url;
     }
 
+    public LoginResponse registerUser(UserData newUser) throws ResponseException {
+        var path = "/user";
+        return this.makeRequest("POST", path, newUser, LoginResponse.class);
+    }
+
+    public LoginResponse loginUser(UserData loginUser) throws ResponseException {
+        var path = "/session";
+        return this.makeRequest("POST", path, loginUser, LoginResponse.class);
+    }
+
+    public LoginResponse logoutUser(String authToken) throws ResponseException {
+        var path = "/session";
+        return this.makeRequest("DELETE", path, loginUser, LoginResponse.class);
+    }
 
 
-
-
-
-
+    public void deleteDatabase() throws ResponseException {
+        var path = "/db";
+        this.makeRequest("DELETE", path, null, null);
+    }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {
