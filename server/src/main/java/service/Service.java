@@ -25,7 +25,8 @@ public class Service {
         this.dataAccess = dataAccess;
     }
 
-    public String clearDatabase() {
+    public String clearDatabase(String authToken) throws ServiceException {
+        dataAccess.authenticateUser(authToken);
         dataAccess.clearDatabase();
         return "{}";
     }

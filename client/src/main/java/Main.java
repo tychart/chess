@@ -21,7 +21,7 @@ public class Main {
         String currToken = authStuff.authToken();
         System.out.println(authStuff);
 
-        serverFacade.logoutUser(currToken);
+//        serverFacade.logoutUser(currToken);
 
 
 

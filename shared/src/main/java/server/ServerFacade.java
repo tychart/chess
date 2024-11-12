@@ -31,10 +31,10 @@ public class ServerFacade {
         return this.makeRequest("POST", path, loginUser, LoginResponse.class);
     }
 
-    public LoginResponse logoutUser(String authToken) throws ResponseException {
-        var path = "/session";
-        return this.makeRequest("DELETE", path, loginUser, LoginResponse.class);
-    }
+//    public LoginResponse logoutUser(String authToken) throws ResponseException {
+//        var path = "/session";
+//        return this.makeRequest("DELETE", path, loginUser, LoginResponse.class);
+//    }
 
 
     public void deleteDatabase() throws ResponseException {
