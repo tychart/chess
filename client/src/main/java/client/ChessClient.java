@@ -1,11 +1,14 @@
 package client;
 
 import java.util.Arrays;
+
+
 import com.google.gson.Gson;
 
 import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
+import chess.ChessGame;
 
 
 public class ChessClient {
@@ -48,6 +51,8 @@ public class ChessClient {
     private String authenicatedSwitch(String[] params, String cmd) throws ResponseException {
         return switch (cmd) {
             case "join", "-j" -> joinGame(params);
+            case "list-games", "-l" -> listGames(params);
+            case "create", "-c" -> createGame(params);
             case "logout", "-r" -> logout(params);
             case "quit", "-q" -> "quit";
             default -> help();
@@ -115,8 +120,45 @@ public class ChessClient {
     }
 
     public String joinGame(String[] params) throws ResponseException {
+
+
+        // If is not an observer, then it must be a player
+        if (params.length == 2 && !params[0].toUpperCase().equals("OBSERVER")) {
+            ChessGame.TeamColor newTeamColor = parseTeamColor(params[1]);
+            int gameID = Integer.parseInt(params[0]);
+            JoinGameRequest joinGameRequest = new JoinGameRequest(newTeamColor, gameID);
+            server.joinGame(authToken, joinGameRequest);
+            return "Successfully joined the game";
+        } else {
+            // Is observer
+            int gameID = Integer.parseInt(params[0]);
+        }
+
+
         return "";
     }
+
+    public String listGames(String[] params) throws ResponseException {
+        GameListResponse gameListResponse = server.listGames(authToken);
+        return gameListResponse.games().toString();
+
+//        return "";
+    }
+
+    public String createGame(String[] params) throws ResponseException {
+        if (params.length >= 1) {
+            GameRequest gameRequest = new GameRequest(params[0]);
+            server.createGame(authToken, gameRequest);
+            return "Game " + params[0] + " successfully created";
+        }
+
+        throw new ResponseException(400, "Expected: <NAME>");
+    }
+
+    private ChessGame.TeamColor parseTeamColor(String color) {
+        return ChessGame.TeamColor.valueOf(color.toUpperCase());
+    }
+
 
 
     public String help() {
@@ -131,7 +173,7 @@ public class ChessClient {
             case SIGNEDIN -> """
                     - join <Game Number> [White|Black|Observer] (Default=Observer)
                     - list-games
-                    - create-game <gameName>
+                    - create <NAME>
                     - logout
                     - help
                     - quit
