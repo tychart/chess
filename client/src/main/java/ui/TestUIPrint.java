@@ -16,7 +16,7 @@ public class TestUIPrint {
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
     // Piece arrays for easy board setup.
-    private static final String[] ROW_LABELS = {"8", "7", "6", "5", "4", "3", "2", "1"};
+    private static final String[] ROW_LABELS = {"1", "2", "3", "4", "5", "6", "7", "8"};
     private static final String[] COL_LABELS = {" a ", " b ", " c ", " d ", " e ", " f ", " g ", " h "};
 
 
@@ -34,7 +34,7 @@ public class TestUIPrint {
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
         System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
-        System.out.println(chessBoard);
+//        System.out.println(chessBoard);
         drawNormal(out);
     }
 
@@ -43,14 +43,18 @@ public class TestUIPrint {
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
         System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
-        System.out.println(chessBoard);
+//        System.out.println(chessBoard);
         drawFlipped(out);
     }
 
     private void drawNormal(PrintStream out) {
+        drawTopBoarder(out);
+
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) {
             drawRowOfSquares(out, row);
         }
+
+        drawBottomBoarder(out);
     }
 
     private void drawFlipped(PrintStream out) {
@@ -65,6 +69,7 @@ public class TestUIPrint {
 
     private void drawRowOfSquares(PrintStream out, int row) {
         for (int squareRow = 0; squareRow < (SQUARE_SIZE_IN_PADDED_CHARS); ++squareRow) {
+            drawLeftBoarder(out, row, squareRow);
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 if ((row + col) % 2 == 0) {
 //                    setWhite(out); // White square
@@ -87,6 +92,7 @@ public class TestUIPrint {
                     out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
                 }
             }
+            drawRightBoarder(out, row, squareRow);
             setBlack(out);
             out.println();
         }
@@ -97,16 +103,32 @@ public class TestUIPrint {
         drawHorizontalLine(out);
     }
 
+    private static void drawLeftBoarder(PrintStream out, int row, int squareRow) {
+
+        drawVerticalLabels(out, row, squareRow);
+        drawVerticalLine(out);
+
+    }
+
     private static void drawBottomBoarder(PrintStream out) {
         drawHorizontalLine(out);
         drawHorizontalLabels(out);
     }
 
+    private static void drawRightBoarder(PrintStream out, int row, int squareRow) {
+
+        drawVerticalLine(out);
+        drawVerticalLabels(out, row, squareRow);
+
+
+    }
+
     private static void drawHorizontalLabels(PrintStream out) {
         int boardLenInPaddedChars = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS;
+        int cornerSize = SQUARE_SIZE_IN_PADDED_CHARS + 1;
 
         setWhite(out);
-        out.print(EMPTY.repeat(boardLenInPaddedChars));
+        out.print(EMPTY.repeat(boardLenInPaddedChars + cornerSize * 2));
 
         setBackgroud(out);
         out.println();
@@ -115,17 +137,19 @@ public class TestUIPrint {
         int suffix = SQUARE_SIZE_IN_PADDED_CHARS / 2;
 
         setWhite(out);
+        out.print(EMPTY.repeat(cornerSize));
         for (int i = 0; i < BOARD_SIZE_IN_SQUARES; i++) {
             out.print(EMPTY.repeat(prefix));
             out.print(COL_LABELS[i]);
             out.print(EMPTY.repeat(suffix));
         }
+        out.print(EMPTY.repeat(cornerSize));
 
         setBackgroud(out);
         out.println();
 
         setWhite(out);
-        out.print(EMPTY.repeat(boardLenInPaddedChars));
+        out.print(EMPTY.repeat(boardLenInPaddedChars + cornerSize * 2));
         setBackgroud(out);
         out.println();
 
@@ -133,16 +157,39 @@ public class TestUIPrint {
 
     private static void drawHorizontalLine(PrintStream out) {
 
-        int boardSizeInSpaces = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS +
-                (BOARD_SIZE_IN_SQUARES - 1) * LINE_WIDTH_IN_PADDED_CHARS;
+        int boardLenInPaddedChars = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS;
 
         for (int lineRow = 0; lineRow < LINE_WIDTH_IN_PADDED_CHARS; ++lineRow) {
-            setBlack(out);
-            out.print(EMPTY.repeat(boardSizeInSpaces));
+            setWhite(out);
+            out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
 
             setBlack(out);
+            out.print(EMPTY.repeat(boardLenInPaddedChars + 2));
+
+            setWhite(out);
+            out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
+            setBackgroud(out);
             out.println();
         }
+    }
+
+    private static void drawVerticalLabels(PrintStream out, int row, int squareRow) {
+        setWhite(out);
+
+        if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
+            out.print(EMPTY);
+            out.print(" ");
+            out.print(ROW_LABELS[row]);
+            out.print(" ");
+            out.print(EMPTY);
+        } else {
+            out.print(EMPTY.repeat(3));
+        }
+    }
+
+    private static void drawVerticalLine(PrintStream out) {
+        setBlack(out);
+        out.print(EMPTY);
     }
 
     private String getPiecePretty(int row, int col) {
