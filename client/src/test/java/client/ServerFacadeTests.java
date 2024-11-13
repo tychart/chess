@@ -26,6 +26,11 @@ public class ServerFacadeTests {
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
         serverFacade = new ServerFacade(serverUrl);
+
+    }
+
+    @BeforeEach
+    public void beforeEach() throws ResponseException {
         serverFacade.deleteDatabase();
 
         existingUser = new UserData("existingUser", "pass", "my@emal.com");
@@ -66,7 +71,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void loginUserFail() throws ResponseException {
+    public void loginUserFail() {
         UserData newUser = new UserData("tychart", "badpass", "tyler@byu");
 
         assertThrows(ResponseException.class, () -> serverFacade.loginUser(newUser));
@@ -81,9 +86,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void logoutUserFail() throws ResponseException {
-        UserData newUser = new UserData("tychart", "badpass", "tyler@byu");
-
+    public void logoutUserFail() {
         assertThrows(ResponseException.class, () -> serverFacade.logoutUser("BadAuthToken"));
     }
 
@@ -115,7 +118,7 @@ public class ServerFacadeTests {
     }
 
     @Test
-    public void gameListFail() throws ResponseException {
+    public void gameListFail() {
         assertThrows(ResponseException.class, () -> serverFacade.listGames("No auth"));
     }
 
