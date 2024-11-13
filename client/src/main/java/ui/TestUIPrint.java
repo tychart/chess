@@ -33,7 +33,7 @@ public class TestUIPrint {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
+//        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
 //        System.out.println(chessBoard);
         drawNormal(out);
     }
@@ -42,7 +42,7 @@ public class TestUIPrint {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
+//        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
 //        System.out.println(chessBoard);
         drawFlipped(out);
     }

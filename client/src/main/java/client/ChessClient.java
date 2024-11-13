@@ -9,6 +9,7 @@ import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
 import chess.ChessGame;
+import ui.TestUIPrint;
 
 
 public class ChessClient {
@@ -152,6 +153,7 @@ public class ChessClient {
             JoinGameRequest joinGameRequest = new JoinGameRequest(null, gameID); // null for observer
 //            server.joinGame(authToken, joinGameRequest);
             state = State.OBSERVER;
+            displayTestBoards();
             return "Successfully joined game " + gameName + " as an observer.";
         }
 
@@ -162,12 +164,21 @@ public class ChessClient {
             JoinGameRequest joinGameRequest = new JoinGameRequest(teamColor, gameID);
             server.joinGame(authToken, joinGameRequest);
             state = State.GAMEPLAY;
+            displayTestBoards();
             return "Successfully joined game " + gameName + " as " + teamColor;
 
         } catch (IllegalArgumentException e) {
             throw new ResponseException(400, "Error: Invalid team color. Use 'WHITE', 'BLACK', or 'OBSERVER'.");
         }
 
+    }
+
+    private void displayTestBoards() {
+        ChessGame chessGame = new ChessGame();
+        TestUIPrint printBoard = new TestUIPrint(chessGame);
+        printBoard.drawNormalChessBoard();
+        System.out.println();
+        printBoard.drawFlippedChessBoard();
     }
 
     public String listGames(String[] params) {
