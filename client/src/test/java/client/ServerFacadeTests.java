@@ -144,7 +144,7 @@ public class ServerFacadeTests {
         JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
 
         serverFacade.joinGame(loginResponse.authToken(), joinGameRequest);
-        assertThrows(ResponseException.class, () -> serverFacade.joinGame(loginResponse.authToken(), joinGameRequest));
+        assertThrows(ResponseException.class, () -> serverFacade.joinGame("Badauth", joinGameRequest));
 
     }
 
