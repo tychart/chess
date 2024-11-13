@@ -125,11 +125,16 @@ public class ChessClient {
             return "Error: Game ID is required.";
         }
 
+        int gameIndex;
+        String gameName;
         int gameID;
         try {
-            gameID = Integer.parseInt(params[0]);
+            gameIndex = Integer.parseInt(params[0]) - 1;
+            List<GameDataSimple> sortedGames = getSortedGameList();
+            gameID = sortedGames.get(gameIndex).gameID();
+            gameName = sortedGames.get(gameIndex).gameName();
         } catch (NumberFormatException e) {
-            return "Error: Invalid Game ID format.";
+            return "Error: Invalid Game ID format." + params[0];
         }
 
         // Handle observer case
@@ -137,7 +142,7 @@ public class ChessClient {
             JoinGameRequest joinGameRequest = new JoinGameRequest(null, gameID); // null for observer
 //            server.joinGame(authToken, joinGameRequest);
             state = State.OBSERVER;
-            return "Joined game as an observer.";
+            return "Successfully joined game " + gameName + " as an observer.";
         }
 
         // Handle player case
@@ -147,7 +152,7 @@ public class ChessClient {
             JoinGameRequest joinGameRequest = new JoinGameRequest(teamColor, gameID);
             server.joinGame(authToken, joinGameRequest);
             state = State.GAMEPLAY;
-            return "Successfully joined the game as " + teamColor;
+            return "Successfully joined game " + gameName + " as " + teamColor;
 
         } catch (IllegalArgumentException e) {
             return "Error: Invalid team color. Use 'WHITE', 'BLACK', or 'OBSERVER'.";
@@ -156,8 +161,19 @@ public class ChessClient {
     }
 
     public String listGames(String[] params) throws ResponseException {
+
+        List<GameDataSimple> sortedGames = getSortedGameList();
+
+        return prettyToStringGameListResponse(sortedGames);
+    }
+
+    private List<GameDataSimple> getSortedGameList() throws ResponseException {
         GameListResponse gameListResponse = server.listGames(authToken);
-        return prettyToStringGameListResponse(gameListResponse);
+
+        // Sort games by gameID
+        List<GameDataSimple> sortedGames = new ArrayList<>(gameListResponse.games());
+        sortedGames.sort(Comparator.comparingInt(GameDataSimple::gameID));
+        return sortedGames;
     }
 
     public String createGame(String[] params) throws ResponseException {
@@ -174,19 +190,17 @@ public class ChessClient {
         return ChessGame.TeamColor.valueOf(color.toUpperCase());
     }
 
-    private String prettyToStringGameListResponse(GameListResponse gameListResponse){
+    private String prettyToStringGameListResponse(List<GameDataSimple> sortedGames){
         StringBuilder outStr = new StringBuilder();
         int idWidth = 8;        // Width for Game ID
         int nameWidth = 30;     // Width for Game Name
         int userWidth = 20;     // Width for Username columns
+        int counter = 1;
 
-        // Sort games in descending order by gameID
-        List<GameDataSimple> sortedGames = new ArrayList<>(gameListResponse.games());
-        sortedGames.sort(Comparator.comparingInt(GameDataSimple::gameID));
 
         // Header with column names
         outStr.append("----------------------------------------------------------------------------------\n");
-        outStr.append(String.format("%-" + idWidth + "s", "Game ID"));
+        outStr.append(String.format("%-" + idWidth + "s", "Game #"));
         outStr.append(String.format("%-" + nameWidth + "s", "Game Name"));
         outStr.append(String.format("%-" + userWidth + "s", "White Player"));
         outStr.append(String.format("%-" + userWidth + "s", "Black Player"));
@@ -195,11 +209,12 @@ public class ChessClient {
 
         // Game data rows
         for (GameDataSimple game : sortedGames) {
-            outStr.append(String.format("%-" + idWidth + "d", game.gameID()));
+            outStr.append(String.format("%-" + idWidth + "d", counter));
             outStr.append(String.format("%-" + nameWidth + "s", game.gameName()));
             outStr.append(String.format("%-" + userWidth + "s", game.whiteUsername()));
             outStr.append(String.format("%-" + userWidth + "s", game.blackUsername()));
             outStr.append("\n");
+            counter++;
         }
 
         outStr.append("----------------------------------------------------------------------------------\n");
@@ -219,10 +234,10 @@ public class ChessClient {
                     * -q quit
                     """;
             case SIGNEDIN -> """
-                    * -j join <GAME ID> [WHITE|BLACK|OBSERVER] (Default=OBSERVER)
+                    * -j join <GAME #> [WHITE|BLACK|OBSERVER] (Default=OBSERVER)
                     * -l list-games
                     * -c create <NAME>
-                    * -o logout
+                    * -q logout
                     * -h help
                     * -q quit
                     """;
