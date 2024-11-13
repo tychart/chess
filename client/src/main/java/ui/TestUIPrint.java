@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessGame;
+
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
@@ -19,6 +21,16 @@ public class TestUIPrint {
     private static final String[] BLACK_PIECES = {
             BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK
     };
+
+    ChessGame chessGame;
+
+
+    public TestUIPrint(ChessGame chessGame) {
+        this.chessGame = chessGame;
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print("\u001b[2J"); // Clear the screen.
+        drawChessBoard(out);
+    }
 
     public static void main(String[] args) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
