@@ -130,7 +130,20 @@ public class ServerFacadeTests {
 
         GameListResponse gameListResponse = serverFacade.listGames(loginResponse.authToken());
         System.out.println(gameListResponse);
+
         assertNotNull(gameListResponse.games());
+    }
+
+    @Test
+    public void joinGameFail() throws ResponseException {
+        LoginResponse loginResponse = serverFacade.loginUser(existingUser);
+
+
+        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
+
+        serverFacade.joinGame(loginResponse.authToken(), joinGameRequest);
+        assertThrows(ResponseException.class, () -> serverFacade.joinGame(loginResponse.authToken(), joinGameRequest));
+
     }
 
 
