@@ -32,6 +32,7 @@ public class ChessClient {
                 case SIGNEDOUT -> unauthenicatedSwitch(params, cmd);
                 case SIGNEDIN -> authenicatedSwitch(params, cmd);
                 case GAMEPLAY -> gameplaySwitch(params, cmd);
+                case OBSERVER -> "";
             };
 
         } catch (ResponseException ex) {
@@ -135,6 +136,7 @@ public class ChessClient {
         if (params.length == 1 || "OBSERVER".equalsIgnoreCase(params[1])) {
             JoinGameRequest joinGameRequest = new JoinGameRequest(null, gameID); // null for observer
 //            server.joinGame(authToken, joinGameRequest);
+            state = State.OBSERVER;
             return "Joined game as an observer.";
         }
 
@@ -144,6 +146,7 @@ public class ChessClient {
             teamColor = parseTeamColor(params[1]);
             JoinGameRequest joinGameRequest = new JoinGameRequest(teamColor, gameID);
             server.joinGame(authToken, joinGameRequest);
+            state = State.GAMEPLAY;
             return "Successfully joined the game as " + teamColor;
 
         } catch (IllegalArgumentException e) {
@@ -228,6 +231,8 @@ public class ChessClient {
                     - register <username> <password> <email>
                     - help
                     - quit
+                    """;
+            case OBSERVER -> """
                     """;
         };
     }
