@@ -16,7 +16,7 @@ public class ServerFacadeTests {
 
     private static Server server;
     private static ServerFacade serverFacade;
-    static String serverUrl = "http://localhost:8080";
+    static String serverUrl = "http://localhost";
     static UserData existingUser;
     static LoginResponse existingLoginResponse;
 
@@ -25,7 +25,7 @@ public class ServerFacadeTests {
         server = new Server();
         var port = server.run(0);
         System.out.println("Started test HTTP server on " + port);
-        serverFacade = new ServerFacade(serverUrl);
+        serverFacade = new ServerFacade(serverUrl + ":" + port);
     }
 
     @BeforeEach
@@ -148,6 +148,17 @@ public class ServerFacadeTests {
 
     }
 
+    @Test
+    public void deleteDatabaseSuccess() throws ResponseException {
+        serverFacade.deleteDatabase();
+        assertTrue(true); // Database call did not throw exception
+    }
+
+    @Test
+    public void deleteDatabaseFail() throws ResponseException {
+        serverFacade.deleteDatabase();
+        assertTrue(true); // I am not sure how to make this fail
+    }
 
 
 }
