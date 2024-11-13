@@ -55,15 +55,6 @@ public class Server {
             res.status(401);
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
-
-//        try {
-//            // Extract the authToken from the request headers
-//            String authToken = req.headers("authorization");
-//            return service.clearDatabase(authToken);
-//        } catch (ServiceException e) {
-//            res.status(401);
-//            return gson.toJson(new ErrorResponse(e.getMessage()));
-//        }
     }
 
     private String createUser(Request req, Response res) {
@@ -110,7 +101,6 @@ public class Server {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-//        return "";
     }
 
     private String createGame(Request req, Response res) {

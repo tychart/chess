@@ -88,7 +88,7 @@ public class ChessClient {
             state = State.SIGNEDIN;
             return String.format("Welcome %s! You are signed in, now you can join a game!", username);
         } catch (ResponseException e) {
-            throw new ResponseException(e.StatusCode(), "Login failed.  " + e.getMessage());
+            throw new ResponseException(e.getStatusCode(), "Login failed.  " + e.getMessage());
         }
     }
 
@@ -112,7 +112,7 @@ public class ChessClient {
             state = State.SIGNEDIN;
             return String.format("Welcome %s! You are signed in, now you can join a game!", username);
         } catch (ResponseException e) {
-            throw new ResponseException(e.StatusCode(), "Registration failed: " + e.getMessage());
+            throw new ResponseException(e.getStatusCode(), "Registration failed: " + e.getMessage());
         }
     }
 
@@ -212,7 +212,7 @@ public class ChessClient {
             server.createGame(authToken, gameRequest);
             return "Game '" + params[0] + "' successfully created!";
         } catch (ResponseException e) {
-            throw new ResponseException(e.StatusCode(), "Failed to create game: " + e.getMessage());
+            throw new ResponseException(e.getStatusCode(), "Failed to create game: " + e.getMessage());
         }
     }
 

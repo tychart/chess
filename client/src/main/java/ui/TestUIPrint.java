@@ -33,8 +33,6 @@ public class TestUIPrint {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-//        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
-//        System.out.println(chessBoard);
         drawNormal(out);
     }
 
@@ -42,8 +40,6 @@ public class TestUIPrint {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-//        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
-//        System.out.println(chessBoard);
         drawFlipped(out);
     }
 
@@ -72,10 +68,8 @@ public class TestUIPrint {
             drawLeftBoarder(out, row, squareRow);
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 if ((row + col) % 2 == 0) {
-//                    setWhite(out); // White square
                     setDarkGrey(out);
                 } else {
-//                    setDarkGrey(out); // Black square
                     setWhite(out);
                 }
 
@@ -234,11 +228,6 @@ public class TestUIPrint {
     private static void setDarkGrey(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY); // Set background to dark gray
         out.print(SET_TEXT_COLOR_BLACK); // Set text to white
-    }
-
-    private static void setRed(PrintStream out) {
-        out.print(SET_BG_COLOR_RED);
-        out.print(SET_TEXT_COLOR_RED);
     }
 
     private static void setBackgroud(PrintStream out) {
