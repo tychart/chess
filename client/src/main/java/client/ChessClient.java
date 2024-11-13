@@ -32,7 +32,7 @@ public class ChessClient {
             case SIGNEDOUT -> unauthenicatedSwitch(params, cmd);
             case SIGNEDIN -> authenicatedSwitch(params, cmd);
             case GAMEPLAY -> gameplaySwitch(params, cmd);
-            case OBSERVER -> "";
+            case OBSERVER -> observerSwitch(params, cmd);
         };
     }
 
@@ -57,16 +57,19 @@ public class ChessClient {
 
     private String gameplaySwitch(String[] params, String cmd) throws ResponseException {
         return switch (cmd) {
-            case "login", "-l" -> login(params);
-            case "register", "-r" -> register(params);
-//                case "list" -> listPets();
-//                case "signout" -> signOut();
-//                case "adopt" -> adoptPet(params);
-//                case "adoptall" -> adoptAllPets();
             case "quit", "-q" -> "quit";
             default -> help();
         };
     }
+
+    private String observerSwitch(String[] params, String cmd) throws ResponseException {
+        return switch (cmd) {
+            case "quit", "-q" -> "quit";
+            default -> help();
+        };
+    }
+
+
 
     public String login(String[] params) throws ResponseException {
         if (params.length != 2) {
@@ -258,11 +261,14 @@ public class ChessClient {
                     * -q quit
                     """;
             case GAMEPLAY -> """
-                    - {To Impliment in Phase 6}
-                    - help
-                    - quit
+                    - {In GamePlay:To Impliment in Phase 6}
+                    * -h help
+                    * -q quit
                     """;
             case OBSERVER -> """
+                    - {In Observer: To Impliment in Phase 6}
+                    * -h help
+                    * -q quit
                     """;
         };
     }
