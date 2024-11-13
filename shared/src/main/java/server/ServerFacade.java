@@ -42,9 +42,9 @@ public class ServerFacade {
     }
 
 
-    public void deleteDatabase(String authToken) throws ResponseException {
+    public void deleteDatabase() throws ResponseException {
         var path = "/db";
-        this.makeRequest("DELETE", path, null, null, authToken);
+        this.makeRequest("DELETE", path, null, null);
     }
 
     // Version of makeRequest that does not require an authToken
