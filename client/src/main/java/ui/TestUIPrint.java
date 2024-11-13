@@ -7,6 +7,7 @@ public class TestUIPrint {
 
     // Board dimensions.
     private static final int BOARD_SIZE_IN_SQUARES = 8;
+    private static final int SQUARE_SIZE_IN_CHARS = 9;
     private static final int SQUARE_SIZE_IN_PADDED_CHARS = 3;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
@@ -44,7 +45,7 @@ public class TestUIPrint {
     }
 
     private static void drawRowOfSquares(PrintStream out, int row) {
-        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
+        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_CHARS; ++squareRow) {
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 if ((row + col) % 2 == 0) {
                     setWhite(out); // White square
@@ -52,34 +53,36 @@ public class TestUIPrint {
                     setBlack(out); // Black square
                 }
 
-                if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-                    int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+                if (squareRow == SQUARE_SIZE_IN_CHARS / 2 + 1) {
+                    int prefixLength = SQUARE_SIZE_IN_CHARS / 2;
+                    int suffixLength = SQUARE_SIZE_IN_CHARS - prefixLength - 1;
+                    boolean printedPiece = false;
 
                     out.print(EMPTY.repeat(prefixLength));
 
                     if (row == 1) {
                         out.print(WHITE_PIECES[col]); // White pawns
+                        printedPiece = true;
                     } else if (row == 6) {
                         out.print(BLACK_PIECES[col]); // Black pawns
+                        printedPiece = true;
                     } else {
                         if (row == 0) {
                             out.print(WHITE_PIECES[col]); // White back row pieces
+                            printedPiece = true;
                         } else if (row == 7) {
                             out.print(BLACK_PIECES[col]); // Black back row pieces
+                            printedPiece = true;
                         } else {
-                            out.print("   "); // Empty spaces for the rest of the board
+                            out.print(" "); // Empty spaces for the rest of the board
                         }
                     }
 
                     out.print(EMPTY.repeat(suffixLength));
                 } else {
-                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
+                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_CHARS));
                 }
 
-//                if (col < BOARD_SIZE_IN_SQUARES - 1) {
-//                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS)); // Column separator
-//                }
             }
             setBlack(out);
             out.println();
