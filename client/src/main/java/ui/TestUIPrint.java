@@ -36,10 +36,10 @@ public class TestUIPrint {
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
             drawRowOfSquares(out, row);
 
-            if (row < BOARD_SIZE_IN_SQUARES - 1) {
-                // Draw horizontal separator between rows.
-                drawHorizontalLine(out);
-            }
+//            if (row < BOARD_SIZE_IN_SQUARES - 1) {
+//                // Draw horizontal separator between rows.
+//                drawHorizontalLine(out);
+//            }
         }
     }
 
@@ -77,11 +77,11 @@ public class TestUIPrint {
                     out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
                 }
 
-                if (col < BOARD_SIZE_IN_SQUARES - 1) {
-                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS)); // Column separator
-                }
+//                if (col < BOARD_SIZE_IN_SQUARES - 1) {
+//                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS)); // Column separator
+//                }
             }
-
+            setBlack(out);
             out.println();
         }
     }
