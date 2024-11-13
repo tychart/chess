@@ -5,6 +5,10 @@ import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 
 import static client.EscapeSequences.*;
 
@@ -44,33 +48,42 @@ public class TestUIPrint {
     }
 
     private void drawNormal(PrintStream out) {
-        drawTopBoarder(out);
+        drawTopBoarder(out, false);
 
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) {
-            drawRowOfSquares(out, row);
+            drawRowOfSquares(out, row, false);
         }
 
-        drawBottomBoarder(out);
+        drawBottomBoarder(out, false);
     }
 
     private void drawFlipped(PrintStream out) {
-        drawTopBoarder(out);
+        drawTopBoarder(out, true);
 
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
-            drawRowOfSquares(out, row);
+            drawRowOfSquares(out, row, true);
         }
 
-        drawBottomBoarder(out);
+        drawBottomBoarder(out, true);
     }
 
-    private void drawRowOfSquares(PrintStream out, int row) {
+    private void drawRowOfSquares(PrintStream out, int row, boolean flipped) {
         for (int squareRow = 0; squareRow < (SQUARE_SIZE_IN_PADDED_CHARS); ++squareRow) {
             drawLeftBoarder(out, row, squareRow);
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 if ((row + col) % 2 == 0) {
-                    setDarkGrey(out);
+                    if (!flipped) {
+                        setDarkGrey(out);
+                    } else {
+                        setWhite(out);
+                    }
                 } else {
-                    setWhite(out);
+                    if (!flipped) {
+                        setWhite(out);
+                    } else {
+                        setDarkGrey(out);
+                    }
+
                 }
 
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
@@ -79,7 +92,11 @@ public class TestUIPrint {
 
                     out.print(EMPTY.repeat(prefixLength));
 
-                    out.print(this.getPiecePretty(row + 1, col + 1));
+                    if (!flipped) {
+                        out.print(this.getPiecePretty(row + 1, col + 1));
+                    } else {
+                        out.print(this.getPiecePretty(row + 1, (BOARD_SIZE_IN_SQUARES - col)));
+                    }
 
                     out.print(EMPTY.repeat(suffixLength));
                 } else {
@@ -92,8 +109,8 @@ public class TestUIPrint {
         }
     }
 
-    private static void drawTopBoarder(PrintStream out) {
-        drawHorizontalLabels(out);
+    private static void drawTopBoarder(PrintStream out, boolean flipped) {
+        drawHorizontalLabels(out, flipped);
         drawHorizontalLine(out);
     }
 
@@ -104,9 +121,9 @@ public class TestUIPrint {
 
     }
 
-    private static void drawBottomBoarder(PrintStream out) {
+    private static void drawBottomBoarder(PrintStream out, boolean flipped) {
         drawHorizontalLine(out);
-        drawHorizontalLabels(out);
+        drawHorizontalLabels(out, flipped);
     }
 
     private static void drawRightBoarder(PrintStream out, int row, int squareRow) {
@@ -117,9 +134,16 @@ public class TestUIPrint {
 
     }
 
-    private static void drawHorizontalLabels(PrintStream out) {
+    private static void drawHorizontalLabels(PrintStream out, boolean flipped) {
         int boardLenInPaddedChars = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS;
         int cornerSize = SQUARE_SIZE_IN_PADDED_CHARS + 1;
+        List<String> orientatedCols = new ArrayList<>();
+        Collections.addAll(orientatedCols, COL_LABELS);
+
+
+        if (flipped) {
+            Collections.reverse(orientatedCols);
+        }
 
         setWhite(out);
         out.print(EMPTY.repeat(boardLenInPaddedChars + cornerSize * 2));
@@ -134,7 +158,7 @@ public class TestUIPrint {
         out.print(EMPTY.repeat(cornerSize));
         for (int i = 0; i < BOARD_SIZE_IN_SQUARES; i++) {
             out.print(EMPTY.repeat(prefix));
-            out.print(COL_LABELS[i]);
+            out.print(orientatedCols.get(i));
             out.print(EMPTY.repeat(suffix));
         }
         out.print(EMPTY.repeat(cornerSize));

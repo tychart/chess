@@ -34,6 +34,7 @@ public class UITest {
                 null
         ));
         TestUIPrint printBoard = new TestUIPrint(chessGame);
+        printBoard.drawNormalChessBoard();
         printBoard.drawFlippedChessBoard();
         assertTrue(true);
     }

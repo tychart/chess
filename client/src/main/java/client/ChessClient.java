@@ -57,15 +57,26 @@ public class ChessClient {
 
     private String gameplaySwitch(String[] params, String cmd) throws ResponseException {
         return switch (cmd) {
-            case "quit", "-q" -> "quit";
-            default -> help();
+            case "leave", "-q" -> {
+                state = State.SIGNEDIN;
+                yield "Leaving the game";
+            }
+            default -> {
+                yield help();
+            }
         };
     }
 
+
     private String observerSwitch(String[] params, String cmd) throws ResponseException {
         return switch (cmd) {
-            case "quit", "-q" -> "quit";
-            default -> help();
+            case "leave", "-q" -> {
+                state = State.SIGNEDIN;
+                yield "Leaving the game";
+            }
+            default -> {
+                yield help();
+            }
         };
     }
 
@@ -273,12 +284,12 @@ public class ChessClient {
             case GAMEPLAY -> """
                     - {In GamePlay:To Impliment in Phase 6}
                     * -h help
-                    * -q quit
+                    * -q leave
                     """;
             case OBSERVER -> """
                     - {In Observer: To Impliment in Phase 6}
                     * -h help
-                    * -q quit
+                    * -q leave
                     """;
         };
     }
