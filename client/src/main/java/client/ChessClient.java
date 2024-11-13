@@ -1,9 +1,9 @@
 package client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-
-
-import com.google.gson.Gson;
+import java.util.Comparator;
+import java.util.List;
 
 import exception.ResponseException;
 import model.*;
@@ -53,8 +53,7 @@ public class ChessClient {
             case "join", "-j" -> joinGame(params);
             case "list-games", "-l" -> listGames(params);
             case "create", "-c" -> createGame(params);
-            case "logout", "-r" -> logout(params);
-            case "quit", "-q" -> "quit";
+            case "logout", "-q" -> logout(params);
             default -> help();
         };
     }
@@ -120,29 +119,42 @@ public class ChessClient {
     }
 
     public String joinGame(String[] params) throws ResponseException {
-
-
-        // If is not an observer, then it must be a player
-        if (params.length == 2 && !params[0].toUpperCase().equals("OBSERVER")) {
-            ChessGame.TeamColor newTeamColor = parseTeamColor(params[1]);
-            int gameID = Integer.parseInt(params[0]);
-            JoinGameRequest joinGameRequest = new JoinGameRequest(newTeamColor, gameID);
-            server.joinGame(authToken, joinGameRequest);
-            return "Successfully joined the game";
-        } else {
-            // Is observer
-            int gameID = Integer.parseInt(params[0]);
+        // Validate game ID is provided
+        if (params.length == 0) {
+            return "Error: Game ID is required.";
         }
 
+        int gameID;
+        try {
+            gameID = Integer.parseInt(params[0]);
+        } catch (NumberFormatException e) {
+            return "Error: Invalid Game ID format.";
+        }
 
-        return "";
+        // Handle observer case
+        if (params.length == 1 || "OBSERVER".equalsIgnoreCase(params[1])) {
+            JoinGameRequest joinGameRequest = new JoinGameRequest(null, gameID); // null for observer
+//            server.joinGame(authToken, joinGameRequest);
+            return "Joined game as an observer.";
+        }
+
+        // Handle player case
+        ChessGame.TeamColor teamColor;
+        try {
+            teamColor = parseTeamColor(params[1]);
+            JoinGameRequest joinGameRequest = new JoinGameRequest(teamColor, gameID);
+            server.joinGame(authToken, joinGameRequest);
+            return "Successfully joined the game as " + teamColor;
+
+        } catch (IllegalArgumentException e) {
+            return "Error: Invalid team color. Use 'WHITE', 'BLACK', or 'OBSERVER'.";
+        }
+
     }
 
     public String listGames(String[] params) throws ResponseException {
         GameListResponse gameListResponse = server.listGames(authToken);
         return prettyToStringGameListResponse(gameListResponse);
-
-//        return "";
     }
 
     public String createGame(String[] params) throws ResponseException {
@@ -165,6 +177,10 @@ public class ChessClient {
         int nameWidth = 30;     // Width for Game Name
         int userWidth = 20;     // Width for Username columns
 
+        // Sort games in descending order by gameID
+        List<GameDataSimple> sortedGames = new ArrayList<>(gameListResponse.games());
+        sortedGames.sort(Comparator.comparingInt(GameDataSimple::gameID));
+
         // Header with column names
         outStr.append("----------------------------------------------------------------------------------\n");
         outStr.append(String.format("%-" + idWidth + "s", "Game ID"));
@@ -175,7 +191,7 @@ public class ChessClient {
         outStr.append("----------------------------------------------------------------------------------\n");
 
         // Game data rows
-        for (GameDataSimple game : gameListResponse.games()) {
+        for (GameDataSimple game : sortedGames) {
             outStr.append(String.format("%-" + idWidth + "d", game.gameID()));
             outStr.append(String.format("%-" + nameWidth + "s", game.gameName()));
             outStr.append(String.format("%-" + userWidth + "s", game.whiteUsername()));
@@ -194,18 +210,18 @@ public class ChessClient {
 
         return switch (state) {
             case SIGNEDOUT -> """
-                    - login <username> <password>
-                    - register <username> <password> <email>
-                    - help
-                    - quit
+                    * -l login <USERNAME> <PASSWORD>>
+                    * -r register <USERNAME> <PASSWORD>> <EMAIL>
+                    * -h help
+                    * -q quit
                     """;
             case SIGNEDIN -> """
-                    - join <Game Number> [White|Black|Observer] (Default=Observer)
-                    - list-games
-                    - create <NAME>
-                    - logout
-                    - help
-                    - quit
+                    * -j join <GAME ID> [WHITE|BLACK|OBSERVER] (Default=OBSERVER)
+                    * -l list-games
+                    * -c create <NAME>
+                    * -o logout
+                    * -h help
+                    * -q quit
                     """;
             case GAMEPLAY -> """
                     - {To Impliment in Phase 6}
