@@ -1,3 +1,4 @@
+import chess.ChessGame;
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
 
@@ -117,4 +118,21 @@ public class ServerFacadeTests {
     public void gameListFail() throws ResponseException {
         assertThrows(ResponseException.class, () -> serverFacade.listGames("No auth"));
     }
+
+    @Test
+    public void joinGameSuccess() throws ResponseException {
+        LoginResponse loginResponse = serverFacade.loginUser(existingUser);
+
+
+        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
+
+        serverFacade.joinGame(loginResponse.authToken(), joinGameRequest);
+
+        GameListResponse gameListResponse = serverFacade.listGames(loginResponse.authToken());
+        System.out.println(gameListResponse);
+        assertNotNull(gameListResponse.games());
+    }
+
+
+
 }

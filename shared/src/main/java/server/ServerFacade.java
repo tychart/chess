@@ -38,12 +38,17 @@ public class ServerFacade {
 
     public void createGame(String authToken, GameRequest gameRequest) throws ResponseException {
         var path = "/game";
-        this.makeRequest("POST", path, gameRequest, GameData.class, authToken);
+        this.makeRequest("POST", path, gameRequest, null, authToken);
     }
 
     public GameListResponse listGames(String authToken) throws ResponseException {
         var path = "/game";
         return this.makeRequest("GET", path, null, GameListResponse.class, authToken);
+    }
+
+    public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws ResponseException {
+        var path = "/game";
+        this.makeRequest("PUT", path, joinGameRequest, null, authToken);
     }
 
 
