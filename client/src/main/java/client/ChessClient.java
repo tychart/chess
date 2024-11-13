@@ -140,7 +140,7 @@ public class ChessClient {
 
     public String listGames(String[] params) throws ResponseException {
         GameListResponse gameListResponse = server.listGames(authToken);
-        return gameListResponse.games().toString();
+        return prettyToStringGameListResponse(gameListResponse);
 
 //        return "";
     }
@@ -159,6 +159,16 @@ public class ChessClient {
         return ChessGame.TeamColor.valueOf(color.toUpperCase());
     }
 
+    private String prettyToStringGameListResponse(GameListResponse gameListResponse){
+        StringBuilder outStr = new StringBuilder();
+
+        for (GameDataSimple game : gameListResponse.games()) {
+            outStr.append("Game");
+            outStr.append(game);
+            outStr.append("\n");
+        }
+        return outStr.toString();
+    }
 
 
     public String help() {
