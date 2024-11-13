@@ -3,6 +3,8 @@ package ui;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
+import static client.EscapeSequences.*;
+
 public class TestUIPrint {
 
     // Board dimensions.
@@ -12,7 +14,7 @@ public class TestUIPrint {
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
 
     // Padded characters.
-    private static final String EMPTY = "   ";
+    private static final String EMPTY = " ";
     private static final String WHITE_SQUARE = " W ";
     private static final String BLACK_SQUARE = " B ";
 
@@ -36,24 +38,19 @@ public class TestUIPrint {
     private static void drawChessBoard(PrintStream out) {
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
             drawRowOfSquares(out, row);
-
-//            if (row < BOARD_SIZE_IN_SQUARES - 1) {
-//                // Draw horizontal separator between rows.
-//                drawHorizontalLine(out);
-//            }
         }
     }
 
     private static void drawRowOfSquares(PrintStream out, int row) {
-        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_CHARS; ++squareRow) {
+        for (int squareRow = 0; squareRow < (SQUARE_SIZE_IN_CHARS / 3); ++squareRow) {
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 if ((row + col) % 2 == 0) {
                     setWhite(out); // White square
                 } else {
-                    setBlack(out); // Black square
+                    setDarkGrey(out); // Black square
                 }
 
-                if (squareRow == SQUARE_SIZE_IN_CHARS / 2 + 1) {
+                if (squareRow == ((SQUARE_SIZE_IN_CHARS / 3) / 2 )) {
                     int prefixLength = SQUARE_SIZE_IN_CHARS / 2;
                     int suffixLength = SQUARE_SIZE_IN_CHARS - prefixLength - 1;
                     boolean printedPiece = false;
@@ -108,4 +105,11 @@ public class TestUIPrint {
         out.print("\u001b[40m"); // Set background to black
         out.print("\u001b[37m"); // Set text to white
     }
+
+    private static void setDarkGrey(PrintStream out) {
+        out.print(SET_BG_COLOR_DARK_GREY); // Set background to black
+        out.print("\u001b[37m"); // Set text to white
+    }
+
+
 }
