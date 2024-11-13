@@ -1,14 +1,12 @@
+package client;
+
 import chess.ChessGame;
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
 
-
-
 import server.Server;
-import server.ServerFacade;
 import model.*;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -51,7 +49,7 @@ public class ServerFacadeTests {
 
         LoginResponse authStuff = serverFacade.registerUser(newUser);
 
-        Assertions.assertNotNull(authStuff.authToken());
+        assertNotNull(authStuff.authToken());
     }
 
     @Test
@@ -66,7 +64,7 @@ public class ServerFacadeTests {
     public void loginUserSuccess() throws ResponseException {
         LoginResponse authStuff = serverFacade.loginUser(existingUser);
 
-        Assertions.assertNotNull(authStuff.authToken());
+        assertNotNull(authStuff.authToken());
     }
 
     @Test

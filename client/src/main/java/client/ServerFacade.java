@@ -1,4 +1,4 @@
-package server;
+package client;
 
 import com.google.gson.Gson;
 
@@ -9,6 +9,7 @@ import java.net.URL;
 
 import exception.ResponseException;
 import model.*;
+import server.ErrorResponse;
 
 public class ServerFacade {
 

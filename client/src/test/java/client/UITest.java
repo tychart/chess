@@ -1,3 +1,5 @@
+package client;
+
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;

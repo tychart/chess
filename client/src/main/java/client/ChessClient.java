@@ -7,7 +7,6 @@ import java.util.List;
 
 import exception.ResponseException;
 import model.*;
-import server.ServerFacade;
 import chess.ChessGame;
 import ui.TestUIPrint;
 
