@@ -161,14 +161,33 @@ public class ChessClient {
 
     private String prettyToStringGameListResponse(GameListResponse gameListResponse){
         StringBuilder outStr = new StringBuilder();
+        int idWidth = 8;        // Width for Game ID
+        int nameWidth = 30;     // Width for Game Name
+        int userWidth = 20;     // Width for Username columns
 
+        // Header with column names
+        outStr.append("----------------------------------------------------------------------------------\n");
+        outStr.append(String.format("%-" + idWidth + "s", "Game ID"));
+        outStr.append(String.format("%-" + nameWidth + "s", "Game Name"));
+        outStr.append(String.format("%-" + userWidth + "s", "White Player"));
+        outStr.append(String.format("%-" + userWidth + "s", "Black Player"));
+        outStr.append("\n");
+        outStr.append("----------------------------------------------------------------------------------\n");
+
+        // Game data rows
         for (GameDataSimple game : gameListResponse.games()) {
-            outStr.append("Game");
-            outStr.append(game);
+            outStr.append(String.format("%-" + idWidth + "d", game.gameID()));
+            outStr.append(String.format("%-" + nameWidth + "s", game.gameName()));
+            outStr.append(String.format("%-" + userWidth + "s", game.whiteUsername()));
+            outStr.append(String.format("%-" + userWidth + "s", game.blackUsername()));
             outStr.append("\n");
         }
+
+        outStr.append("----------------------------------------------------------------------------------\n");
+
         return outStr.toString();
     }
+
 
 
     public String help() {
