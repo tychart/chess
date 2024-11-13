@@ -17,6 +17,7 @@ public class ServerFacadeTests {
     private static ServerFacade serverFacade;
     static String serverUrl = "http://localhost:8080";
     static UserData existingUser;
+    static LoginResponse existingLoginResponse;
 
     @BeforeAll
     public static void init() throws ResponseException {
@@ -25,8 +26,12 @@ public class ServerFacadeTests {
         System.out.println("Started test HTTP server on " + port);
         serverFacade = new ServerFacade(serverUrl);
         serverFacade.deleteDatabase();
+
         existingUser = new UserData("existingUser", "pass", "my@emal.com");
-        serverFacade.registerUser(existingUser);
+        existingLoginResponse = serverFacade.registerUser(existingUser);
+
+        GameRequest gameRequest = new GameRequest("myGame");
+        serverFacade.createGame(existingLoginResponse.authToken(), gameRequest);
     }
 
     @AfterAll
@@ -103,5 +108,13 @@ public class ServerFacadeTests {
     public void gameListSuccess() throws ResponseException {
         LoginResponse loginResponse = serverFacade.loginUser(existingUser);
 
+        GameListResponse gameListResponse = serverFacade.listGames(loginResponse.authToken());
+        System.out.println(gameListResponse);
+        assertNotNull(gameListResponse.games());
+    }
+
+    @Test
+    public void gameListFail() throws ResponseException {
+        assertThrows(ResponseException.class, () -> serverFacade.listGames("No auth"));
     }
 }
