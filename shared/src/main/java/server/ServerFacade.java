@@ -36,6 +36,11 @@ public class ServerFacade {
         this.makeRequest("DELETE", path, null, null, authToken);
     }
 
+    public void createGame(String authToken, GameRequest gameRequest) throws ResponseException {
+        var path = "/game";
+        this.makeRequest("POST", path, gameRequest, GameData.class, authToken);
+    }
+
 
     public void deleteDatabase(String authToken) throws ResponseException {
         var path = "/db";

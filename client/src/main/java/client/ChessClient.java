@@ -25,7 +25,6 @@ public class ChessClient {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
-
             return switch (state) {
                 case SIGNEDOUT -> unauthenicatedSwitch(params, cmd);
                 case SIGNEDIN -> authenicatedSwitch(params, cmd);
@@ -112,7 +111,7 @@ public class ChessClient {
         server.logoutUser(this.authToken);
         authToken = null;
         state = State.SIGNEDOUT;
-        return "";
+        return "Successfully logged out, returning to the unauthenticated state";
     }
 
     public String joinGame(String[] params) throws ResponseException {

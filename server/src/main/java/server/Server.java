@@ -50,13 +50,20 @@ public class Server {
 
     private String clearDatabase(Request req, Response res) {
         try {
-            // Extract the authToken from the request headers
-            String authToken = req.headers("authorization");
-            return service.clearDatabase(authToken);
+            return service.clearDatabase();
         } catch (ServiceException e) {
             res.status(401);
             return gson.toJson(new ErrorResponse(e.getMessage()));
         }
+
+//        try {
+//            // Extract the authToken from the request headers
+//            String authToken = req.headers("authorization");
+//            return service.clearDatabase(authToken);
+//        } catch (ServiceException e) {
+//            res.status(401);
+//            return gson.toJson(new ErrorResponse(e.getMessage()));
+//        }
     }
 
     private String createUser(Request req, Response res) {
