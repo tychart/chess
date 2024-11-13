@@ -29,21 +29,34 @@ public class TestUIPrint {
 
     public TestUIPrint(ChessGame chessGame) {
         this.chessGame = chessGame;
+
+    }
+
+    public void drawNormalChessBoard() {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
         System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
         System.out.println(chessBoard);
-        drawChessBoard(out);
+        drawNormal(out);
     }
 
-//    public static void main(String[] args) {
-//        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-//        out.print("\u001b[2J"); // Clear the screen.
-//        drawChessBoard(out);
-//    }
+    public void drawFlippedChessBoard() {
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print("\u001b[2J"); // Clear the screen.
+        this.chessBoard = chessGame.getBoard();
+        System.out.println(chessBoard.getPiece(new ChessPosition(1, 1)));
+        System.out.println(chessBoard);
+        drawFlipped(out);
+    }
 
-    private void drawChessBoard(PrintStream out) {
+    private void drawNormal(PrintStream out) {
+        for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) {
+            drawRowOfSquares(out, row);
+        }
+    }
+
+    private void drawFlipped(PrintStream out) {
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
             drawRowOfSquares(out, row);
         }
@@ -53,9 +66,11 @@ public class TestUIPrint {
         for (int squareRow = 0; squareRow < (SQUARE_SIZE_IN_PADDED_CHARS); ++squareRow) {
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
                 if ((row + col) % 2 == 0) {
-                    setWhite(out); // White square
+//                    setWhite(out); // White square
+                    setDarkGrey(out);
                 } else {
-                    setDarkGrey(out); // Black square
+//                    setDarkGrey(out); // Black square
+                    setWhite(out);
                 }
 
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {

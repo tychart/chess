@@ -32,6 +32,7 @@ public class UITest {
                 null
         ));
         TestUIPrint printBoard = new TestUIPrint(chessGame);
+        printBoard.drawFlippedChessBoard();
         assertTrue(true);
     }
 }
