@@ -22,22 +22,18 @@ public class ChessClient {
         this.server = new ServerFacade(this.serverUrl);
     }
 
-    public String eval(String input) {
-        try {
-            var tokens = input.toLowerCase().split(" ");
-            var cmd = (tokens.length > 0) ? tokens[0] : "help";
-            var params = Arrays.copyOfRange(tokens, 1, tokens.length);
+    public String eval(String input) throws ResponseException {
 
-            return switch (state) {
-                case SIGNEDOUT -> unauthenicatedSwitch(params, cmd);
-                case SIGNEDIN -> authenicatedSwitch(params, cmd);
-                case GAMEPLAY -> gameplaySwitch(params, cmd);
-                case OBSERVER -> "";
-            };
+        var tokens = input.toLowerCase().split(" ");
+        var cmd = (tokens.length > 0) ? tokens[0] : "help";
+        var params = Arrays.copyOfRange(tokens, 1, tokens.length);
 
-        } catch (ResponseException ex) {
-            return ex.getMessage();
-        }
+        return switch (state) {
+            case SIGNEDOUT -> unauthenicatedSwitch(params, cmd);
+            case SIGNEDIN -> authenicatedSwitch(params, cmd);
+            case GAMEPLAY -> gameplaySwitch(params, cmd);
+            case OBSERVER -> "";
+        };
     }
 
     private String unauthenicatedSwitch(String[] params, String cmd) throws ResponseException {
@@ -73,56 +69,65 @@ public class ChessClient {
     }
 
     public String login(String[] params) throws ResponseException {
-        if (params.length == 2) {
-
-            // Extract individual parameters by index
-            String username = params[0];
-            String password = params[1];
-
-            UserData loginUser = new UserData(username, password, null);
-            LoginResponse loginResponse = server.loginUser(loginUser);
-
-            this.authToken = loginResponse.authToken();
-
-            state = State.SIGNEDIN;
-
-
-            return String.format("Welcome %s! You are signed in, now you can join a game!", username);
+        if (params.length != 2) {
+            throw new ResponseException(400, "Invalid input! Expected: <username> <password>");
         }
-        throw new ResponseException(400, "Expected: <username> <password>");
+
+        // Extract individual parameters
+        String username = params[0];
+        String password = params[1];
+        UserData loginUser = new UserData(username, password, null);
+
+        try {
+            LoginResponse loginResponse = server.loginUser(loginUser);
+            this.authToken = loginResponse.authToken();
+            state = State.SIGNEDIN;
+            return String.format("Welcome %s! You are signed in, now you can join a game!", username);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.StatusCode(), "Login failed.  " + e.getMessage());
+        }
     }
+
 
     public String register(String[] params) throws ResponseException {
-        if (params.length == 3) {
+        if (params.length != 3) {
+            throw new ResponseException(400, "Invalid Input! Expected: <username> <password> <email>");
+        }
 
-            // Extract individual parameters by index
-            String username = params[0];
-            String password = params[1];
-            String email = params[2];
+        // Extract individual parameters by index
+        String username = params[0];
+        String password = params[1];
+        String email = params[2];
 
-            // Create a new UserData object with these parameters
-            UserData newUser = new UserData(username, password, email);
+        // Create a new UserData object with these parameters
+        UserData newUser = new UserData(username, password, email);
+
+        try {
             LoginResponse loginResponse = server.registerUser(newUser);
-
             this.authToken = loginResponse.authToken();
-
             state = State.SIGNEDIN;
             return String.format("Welcome %s! You are signed in, now you can join a game!", username);
+        } catch (ResponseException e) {
+            throw new ResponseException(e.StatusCode(), "Registration failed: " + e.getMessage());
         }
-        throw new ResponseException(400, "Expected: <username> <password> <email>");
     }
 
+
     public String logout(String[] params) throws ResponseException {
-        server.logoutUser(this.authToken);
-        authToken = null;
-        state = State.SIGNEDOUT;
-        return "Successfully logged out, returning to the unauthenticated state";
+        try {
+            server.logoutUser(this.authToken);
+            authToken = null;
+            state = State.SIGNEDOUT;
+            return "Successfully logged out, returning to the unauthenticated state";
+        } catch (ResponseException e) {
+            throw new ResponseException(401, "Invalid Auth Token");
+        }
     }
 
     public String joinGame(String[] params) throws ResponseException {
-        // Validate game ID is provided
+        // Validate game index is provided
         if (params.length == 0) {
-            return "Error: Game ID is required.";
+            throw new ResponseException(400, "Error: Game index is required.");
         }
 
         int gameIndex;
@@ -134,7 +139,9 @@ public class ChessClient {
             gameID = sortedGames.get(gameIndex).gameID();
             gameName = sortedGames.get(gameIndex).gameName();
         } catch (NumberFormatException e) {
-            return "Error: Invalid Game ID format." + params[0];
+            throw new ResponseException(400, "Error: Invalid Game index format: " + params[0]);
+        } catch (IndexOutOfBoundsException e) {
+            throw new ResponseException(400, "Error: Game index is out of range.");
         }
 
         // Handle observer case
@@ -155,14 +162,18 @@ public class ChessClient {
             return "Successfully joined game " + gameName + " as " + teamColor;
 
         } catch (IllegalArgumentException e) {
-            return "Error: Invalid team color. Use 'WHITE', 'BLACK', or 'OBSERVER'.";
+            throw new ResponseException(400, "Error: Invalid team color. Use 'WHITE', 'BLACK', or 'OBSERVER'.");
         }
 
     }
 
-    public String listGames(String[] params) throws ResponseException {
-
-        List<GameDataSimple> sortedGames = getSortedGameList();
+    public String listGames(String[] params) {
+        List<GameDataSimple> sortedGames;
+        try {
+            sortedGames = getSortedGameList();
+        } catch (ResponseException e) {
+            return "Error: Failed to list games.";
+        }
 
         return prettyToStringGameListResponse(sortedGames);
     }
@@ -177,13 +188,18 @@ public class ChessClient {
     }
 
     public String createGame(String[] params) throws ResponseException {
-        if (params.length >= 1) {
-            GameRequest gameRequest = new GameRequest(params[0]);
-            server.createGame(authToken, gameRequest);
-            return "Game " + params[0] + " successfully created";
+        if (params.length < 1) {
+            throw new ResponseException(400, "Invalid input! Expected: <NAME>");
         }
 
-        throw new ResponseException(400, "Expected: <NAME>");
+        GameRequest gameRequest = new GameRequest(params[0]);
+
+        try {
+            server.createGame(authToken, gameRequest);
+            return "Game '" + params[0] + "' successfully created!";
+        } catch (ResponseException e) {
+            throw new ResponseException(e.StatusCode(), "Failed to create game: " + e.getMessage());
+        }
     }
 
     private ChessGame.TeamColor parseTeamColor(String color) {
@@ -243,7 +259,6 @@ public class ChessClient {
                     """;
             case GAMEPLAY -> """
                     - {To Impliment in Phase 6}
-                    - register <username> <password> <email>
                     - help
                     - quit
                     """;

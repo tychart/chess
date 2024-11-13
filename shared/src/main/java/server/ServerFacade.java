@@ -2,10 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -16,6 +13,7 @@ import model.*;
 public class ServerFacade {
 
     private final String serverUrl;
+    Gson gson = new Gson();
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -97,8 +95,28 @@ public class ServerFacade {
     private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, ResponseException {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
-            throw new ResponseException(status, "failure: " + status);
+            // Attempt to read the response body to get a more descriptive error message
+            String responseBody = readErrorResponse(http);
+            throw new ResponseException(status, responseBody != null ? responseBody : "Request failed with status: " + status);
         }
+    }
+
+    private String readErrorResponse(HttpURLConnection http) {
+        try {
+            InputStream errorStream = http.getErrorStream();
+            if (errorStream != null) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+                StringBuilder errorMessage = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    errorMessage.append(line);
+                }
+                return gson.fromJson(errorMessage.toString(), ErrorResponse.class).getMessage();
+            }
+        } catch (IOException ex) {
+            // Log this if you want more details on failed error reading
+        }
+        return null; // Return null if no detailed error message was available
     }
 
     private static <T> T readBody(HttpURLConnection http, Class<T> responseClass) throws IOException {

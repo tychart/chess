@@ -63,22 +63,23 @@ public class Service {
     }
 
     public String loginUser(UserData loginUser) throws ServiceException {
-        if (
-                dataAccess.getUser(loginUser.username()) == null ||
-                !comparePasswords(dataAccess.getUser(loginUser.username()).password(), loginUser.password())
-        ) {
+        UserData user = dataAccess.getUser(loginUser.username());
+
+        if (user == null) {
+            throw new ServiceException("Error: Invalid username or password");
+        }
+
+        if (!comparePasswords(user.password(), loginUser.password())) {
             throw new ServiceException("Error: Invalid username or password");
         }
 
         AuthData authData = new AuthData(loginUser.username(), generateAuthToken());
-
         dataAccess.addAuthData(authData);
 
         LoginResponse loginResponse = new LoginResponse(loginUser.username(), authData.authToken());
 
         // Return a JSON response with username and authToken
         return gson.toJson(loginResponse);
-
     }
 
     public String logoutUser(String authToken) throws ServiceException {

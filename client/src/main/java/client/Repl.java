@@ -23,19 +23,14 @@ public class Repl {
 
             try {
                 result = client.eval(line);
-                System.out.print(BLUE + result);
+                System.out.print(BLUE + result + RESET);
             } catch (Throwable e) {
-                var msg = e.toString();
-                System.out.print(msg);
+                var msg = e.getMessage();
+                System.out.print(RED + msg + RESET);
             }
         }
         System.out.println();
     }
-
-//    public void notify(Notification notification) {
-//        System.out.println(RED + notification.message());
-//        printPrompt();
-//    }
 
     private void printPrompt() {
         System.out.print("\n" + RESET + ">>> " + GREEN);

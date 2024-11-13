@@ -81,18 +81,21 @@ public class Server {
 
     private String loginUser(Request req, Response res) {
         try {
+            // Try to parse the incoming JSON request body to UserData
             UserData newLogin = gson.fromJson(req.body(), UserData.class);
             String jsonReturn = service.loginUser(newLogin);
+
             res.type("application/json");
-//            System.out.println("jsonReturn: " + jsonReturn);
             return jsonReturn;
         } catch (ServiceException e) {
-            res.status(401);
-            return gson.toJson(new ErrorResponse(e.getMessage()));
+            // Handle the case of invalid username/password
+            res.status(401);  // Unauthorized
+            return gson.toJson(new ErrorResponse("Authentication failed: " + e.getMessage()));
         } catch (Exception e) {
-            System.out.println("IT GOT HERE, SOMETHING WENT VERY WRONG");
-            res.status(400);
-            return gson.toJson(new ErrorResponse(e.getMessage()));
+            // Catch any other unexpected exceptions and log them
+            e.printStackTrace();  // Log the full stack trace for debugging
+            res.status(500);  // Internal server error
+            return gson.toJson(new ErrorResponse("Internal server error: " + e.getMessage()));
         }
     }
 
