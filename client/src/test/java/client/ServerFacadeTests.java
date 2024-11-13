@@ -98,4 +98,10 @@ public class ServerFacadeTests {
 
         assertThrows(ResponseException.class,() -> serverFacade.createGame(loginResponse.authToken(), gameRequest));
     }
+
+    @Test
+    public void gameListSuccess() throws ResponseException {
+        LoginResponse loginResponse = serverFacade.loginUser(existingUser);
+
+    }
 }
