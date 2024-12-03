@@ -8,6 +8,7 @@ import spark.*;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 import service.Service;
+import server.websocket.WebSocketHandler;
 import model.*;
 
 public class Server {
@@ -16,17 +17,23 @@ public class Server {
     private final Gson gson = new Gson();
     private final DataAccess dataAccess = new SqlDataAccess();
     private final Service service = new Service(dataAccess);
+    private final WebSocketHandler webSocketHandler;
 
-    public Server() {}
+    public Server() {
+        webSocketHandler = new WebSocketHandler();
+    }
 
     public Server(int port) {
         this.port = port;
+        webSocketHandler = new WebSocketHandler();
     }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        Spark.webSocket("/ws", webSocketHandler);
 
         Spark.delete("/db", this::clearDatabase);
         Spark.post("/user", this::createUser);
