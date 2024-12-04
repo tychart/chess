@@ -5,7 +5,8 @@ import exception.ResponseException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import websocket.messages.Action;
+//import websocket.commands.Action;
+import websocket.commands.UserGameCommand;
 import websocket.messages.Notification;
 
 import java.io.IOException;
@@ -18,12 +19,20 @@ public class WebSocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
-        Action action = new Gson().fromJson(message, Action.class);
-        switch (action.type()) {
-            case ENTER -> enter(action.visitorName(), session);
-            case EXIT -> exit(action.visitorName());
+        UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
+        switch (command.getCommandType()) {
+            case CONNECT -> connect(command.getAuthToken(), command.getGameID(), session);
+            case MAKE_MOVE -> exit(action.visitorName());
         }
     }
+
+    private void connect(String authToken, int gameID, Session session) throws IOException {
+        connections.add(authToken, session);
+        var message = String.format("%s is in the shop", visitorName);
+//        var notification = new Notification(Notification.Type.ARRIVAL, message);
+//        connections.broadcast(visitorName, notification);
+    }
+
 
     private void enter(String visitorName, Session session) throws IOException {
         connections.add(visitorName, session);
