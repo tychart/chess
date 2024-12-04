@@ -16,7 +16,9 @@ import dataaccess.DataAccess;
 import websocket.commands.ConnectCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import chess.*;
@@ -62,8 +64,7 @@ public class WebSocketHandler {
             }
         } catch (ServiceException e) {
             System.out.println(e.getMessage());
-            ServerMessage serverError = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
-            serverError.addMessage(e.getMessage());
+            ServerMessage serverError = new ErrorMessage(e.getMessage());
             session.getRemote().sendString(new Gson().toJson(serverError));
         }
     }
@@ -71,8 +72,7 @@ public class WebSocketHandler {
     private void connect(Session session, UserGameCommand command, UserData currUser) throws IOException, ServiceException {
         connections.add(command.getAuthToken(), session);
         var message = String.format("%s has joined game %d", currUser.username(), command.getGameID());
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        serverMessage.addMessage(message);
+        var serverMessage = new NotificationMessage(message);
         connections.broadcastAllButSelf(command.getAuthToken(), serverMessage);
 
 
@@ -97,15 +97,12 @@ public class WebSocketHandler {
                     chessGame
             ));
 
-            ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-            serverMessage.addMessage(new Gson().toJson(chessGame));
-
+            ServerMessage serverMessage = new LoadGameMessage(new Gson().toJson(chessGame));
             connections.broadcastAll(serverMessage);
 
         } catch (Exception e) {
             System.out.println("SOMETHING TERRIBLE HAPPENED: " + e.getMessage());
-            ServerMessage serverError = new ServerMessage(ServerMessage.ServerMessageType.ERROR);
-            serverError.addMessage(e.getMessage());
+            ServerMessage serverError = new ErrorMessage(e.getMessage());
             connections.broadcastSelf(command.getAuthToken(), serverError);
         }
     }
@@ -130,7 +127,7 @@ public class WebSocketHandler {
         connections.remove(command.getAuthToken());
         var message = String.format("%s has left game %d", currUser.username(), command.getGameID());
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        serverMessage.addMessage(message);
+//        serverMessage.addMessage(message);
         connections.broadcastAllButSelf(command.getAuthToken(), serverMessage);
     }
 
