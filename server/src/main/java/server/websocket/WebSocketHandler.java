@@ -70,6 +70,7 @@ public class WebSocketHandler {
     }
 
     private void connect(Session session, UserGameCommand command, UserData currUser) throws IOException, ServiceException {
+        dataAccess.getGame(command.getGameID());
         connections.add(command.getAuthToken(), session);
         var message = String.format("%s has joined game %d", currUser.username(), command.getGameID());
         var serverMessage = new NotificationMessage(message);
@@ -97,8 +98,11 @@ public class WebSocketHandler {
                     chessGame
             ));
 
-            ServerMessage serverMessage = new LoadGameMessage(new Gson().toJson(chessGame));
-            connections.broadcastAll(serverMessage);
+            ServerMessage loadGameMessage = new LoadGameMessage(new Gson().toJson(chessGame));
+            connections.broadcastAll(loadGameMessage);
+
+            ServerMessage notificationMessage = new NotificationMessage("User" + currUser.username() + " made the move " + command.getChessMove());
+            connections.broadcastAllButSelf(command.getAuthToken(), notificationMessage);
 
         } catch (Exception e) {
             System.out.println("SOMETHING TERRIBLE HAPPENED: " + e.getMessage());
