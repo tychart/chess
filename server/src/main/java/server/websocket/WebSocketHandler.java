@@ -88,6 +88,21 @@ public class WebSocketHandler {
 
             ChessGame chessGame = gameData.game();
 
+            switch (chessGame.getBoard().getPiece(command.getChessMove().getStartPosition()).getTeamColor()) {
+                case WHITE:
+                    if (!Objects.equals(currUser.username(), gameData.whiteUsername())) {
+                        throw new InvalidMoveException("Error: Don't move the other player's piece!");
+                    }
+                    break;
+                case BLACK:
+                    if (!Objects.equals(currUser.username(), gameData.blackUsername())) {
+                        throw new InvalidMoveException("Error: Don't move the other player's piece!");
+                    }
+                    break;
+                default:
+                    throw new InvalidMoveException("Error: Not moving a valid piece");
+            }
+
             chessGame.makeMove(command.getChessMove());
 
             dataAccess.addGame(new GameData(
@@ -105,7 +120,7 @@ public class WebSocketHandler {
             connections.broadcastAllButSelf(command.getAuthToken(), notificationMessage);
 
         } catch (Exception e) {
-            System.out.println("SOMETHING TERRIBLE HAPPENED: " + e.getMessage());
+            System.out.println(e.getMessage());
             ServerMessage serverError = new ErrorMessage(e.getMessage());
             connections.broadcastSelf(command.getAuthToken(), serverError);
         }

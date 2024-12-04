@@ -13,12 +13,14 @@ public class ChessGame {
 
     private TeamColor currTurn;
     private ChessBoard board;
+    private boolean gameStatus; // Is the game still going
 
     public ChessGame() {
 
         currTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        gameStatus = true;
 
     }
 
@@ -27,6 +29,11 @@ public class ChessGame {
      */
     public TeamColor getTeamTurn() {
         return currTurn;
+    }
+
+    public void setNextTurn() {
+        isInCheckmate(getOpposingTeamColor(getTeamTurn()));
+        setTeamTurn(getOpposingTeamColor(getTeamTurn()));
     }
 
     /**
@@ -88,6 +95,10 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        if (!gameStatus) {
+            throw new InvalidMoveException("Can't move, game is over");
+        }
+
         if (
                 this.getBoard().getPiece(move.getStartPosition()) == null ||
                         this.getBoard().getPiece(move.getStartPosition()).getTeamColor() != this.getTeamTurn()
@@ -109,7 +120,7 @@ public class ChessGame {
             throw new InvalidMoveException("Invalid move: " + move);
         }
         // Switch turns after making a move
-        setTeamTurn(getOpposingTeamColor(getTeamTurn()));
+        setNextTurn();
     }
 
     /**
@@ -129,7 +140,11 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return tryEveryPosition(teamColor, true);
+        if (tryEveryPosition(teamColor, true)) {
+            gameStatus = false;
+            return true;
+        }
+        return false;
     }
 
     /**
