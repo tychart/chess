@@ -75,10 +75,9 @@ public class ChessClient {
 
     private String observerSwitch(String[] params, String cmd) throws ResponseException {
         return switch (cmd) {
-            case "leave", "-q" -> {
-                state = State.SIGNEDIN;
-                yield "Leaving the game";
-            }
+            case "redraw", "-r" -> redrawBoard(this.localGame);
+            case "highlight", "-l" -> highlightMoves(params);
+            case "leave", "-q" -> leaveGame();
             default -> help();
         };
     }
@@ -402,7 +401,8 @@ public class ChessClient {
                     * -q leave
                     """;
             case OBSERVER -> """
-                    - {In Observer: To Impliment in Phase 6}
+                    * -r redraw
+                    * -l highlight <letter><number> # Highlights possible moves for selected piece. Example: highlight e2
                     * -h help
                     * -q leave
                     """;
