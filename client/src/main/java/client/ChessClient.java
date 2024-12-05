@@ -63,16 +63,12 @@ public class ChessClient {
 
     private String gameplaySwitch(String[] params, String cmd) throws ResponseException {
         return switch (cmd) {
-            case "leave", "-q" -> {
-                state = State.SIGNEDIN;
-                yield "Leaving the game";
-            }
             case "move", "-m" -> makeMove(params);
             case "redraw", "-r" -> redrawBoard(this.localGame);
             case "highlight", "-l" -> highlightMoves(params);
-            default -> {
-                yield help();
-            }
+            case "leave", "-q" -> leaveGame();
+            case "resign" -> resignGame(params);
+            default -> help();
         };
     }
 
@@ -83,9 +79,7 @@ public class ChessClient {
                 state = State.SIGNEDIN;
                 yield "Leaving the game";
             }
-            default -> {
-                yield help();
-            }
+            default -> help();
         };
     }
 
@@ -242,6 +236,10 @@ public class ChessClient {
             throw new ResponseException(400, "Invalid input! Expected one string without spaces");
         }
 
+        if (!this.localGame.isGoing()) {
+            throw new ResponseException(400, "Error: Can't move, game is over");
+        }
+
         ChessMove chessMove = parseChessMove(params[0]);
 
         try {
@@ -314,7 +312,33 @@ public class ChessClient {
         return "";
     }
 
+    public String leaveGame() throws ResponseException {
+        wsf.sendLeave(this.authToken, this.currGameID);
+        state = State.SIGNEDIN;
+        return "Leaving the game";
+    }
+
+    public String resignGame(String[] params) throws ResponseException {
+        if (params.length != 1) {
+            throw new ResponseException(400, "Invalid input! Need confermaion of 'YES' or 'Y'");
+        }
+        if (!params[0].equalsIgnoreCase("YES") && !params[0].equalsIgnoreCase("Y")){
+            throw new ResponseException(400, "Invalid input! Need confermaion of 'YES' or 'Y'");
+        }
+
+        wsf.resign(this.authToken, this.currGameID);
+        return "Resigning the game, you loose";
+    }
+
     private ChessGame.TeamColor parseTeamColor(String color) {
+        if (color.length() == 1) {
+            if (color.equalsIgnoreCase("W")) {
+                return ChessGame.TeamColor.WHITE;
+            }
+            if (color.equalsIgnoreCase("B")) {
+                return ChessGame.TeamColor.BLACK;
+            }
+        }
         return ChessGame.TeamColor.valueOf(color.toUpperCase());
     }
 
@@ -373,7 +397,7 @@ public class ChessClient {
                     * -r redraw
                     * -l highlight <letter><number> # Highlights possible moves for selected piece. Example: highlight e2
                     * -m move <start letter><start number>-<dest letter><dest number> # Example: move e2-e4
-                    * resign
+                    * resign [YES|Y]
                     * -h help
                     * -q leave
                     """;
