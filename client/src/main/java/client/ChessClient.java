@@ -16,10 +16,13 @@ public class ChessClient {
     private final String serverUrl;
     private State state = State.SIGNEDOUT;
     private String authToken = null;
+    private final NotificationHandler notificationHandler;
+    private WebSocketFacade wsf;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         this.serverUrl = serverUrl;
         this.server = new ServerFacade(this.serverUrl);
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) throws ResponseException {
@@ -162,8 +165,10 @@ public class ChessClient {
         if (params.length == 1 || "OBSERVER".equalsIgnoreCase(params[1])) {
             JoinGameRequest joinGameRequest = new JoinGameRequest(null, gameID); // null for observer
 //            server.joinGame(authToken, joinGameRequest);
-            state = State.OBSERVER;
+            wsf = new WebSocketFacade(serverUrl, notificationHandler);
+            wsf.connectWebSocket(authToken, gameID);
             displayTestBoards();
+            state = State.OBSERVER;
             return "Successfully joined game " + gameName + " as an observer.";
         }
 
@@ -173,6 +178,8 @@ public class ChessClient {
             teamColor = parseTeamColor(params[1]);
             JoinGameRequest joinGameRequest = new JoinGameRequest(teamColor, gameID);
             server.joinGame(authToken, joinGameRequest);
+            wsf = new WebSocketFacade(serverUrl, notificationHandler);
+            wsf.connectWebSocket(authToken, gameID);
             state = State.GAMEPLAY;
             displayTestBoards();
             return "Successfully joined game " + gameName + " as " + teamColor;
