@@ -1,5 +1,8 @@
 package client;
 
+import chess.ChessGame;
+import com.google.gson.Gson;
+import ui.TestUIPrint;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -11,6 +14,7 @@ import static client.EscapeSequences.*;
 
 public class Repl implements NotificationHandler{
     private final ChessClient client;
+    private ChessGame localGame = null;
 
     public Repl(String serverUrl){
         this.client = new ChessClient(serverUrl, this);
@@ -27,7 +31,7 @@ public class Repl implements NotificationHandler{
             String line = scanner.nextLine();
 
             try {
-                result = client.eval(line);
+                result = client.eval(line, localGame);
                 System.out.print(BLUE + result + RESET);
             } catch (Throwable e) {
                 var msg = e.getMessage();
@@ -48,7 +52,9 @@ public class Repl implements NotificationHandler{
     }
 
     public void loadGame(LoadGameMessage notification) {
-        System.out.println(RED + notification.getGame());
+//        System.out.println(RED + notification.getGame());
+        this.localGame = new Gson().fromJson(notification.getGame(), ChessGame.class);
+        client.redrawBoard(this.localGame);
         printPrompt();
     }
 

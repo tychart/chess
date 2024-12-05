@@ -5,6 +5,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import chess.ChessMove;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import exception.ResponseException;
 import model.*;
 import chess.ChessGame;
@@ -18,6 +21,9 @@ public class ChessClient {
     private String authToken = null;
     private final NotificationHandler notificationHandler;
     private WebSocketFacade wsf;
+    private ChessGame localGame = null;
+    private Integer currGameID = null;
+    private ChessGame.TeamColor currTeamColor = null;
 
     public ChessClient(String serverUrl, NotificationHandler notificationHandler) {
         this.serverUrl = serverUrl;
@@ -25,8 +31,8 @@ public class ChessClient {
         this.notificationHandler = notificationHandler;
     }
 
-    public String eval(String input) throws ResponseException {
-
+    public String eval(String input, ChessGame latestCachedGame) throws ResponseException {
+        this.localGame = latestCachedGame;
         var tokens = input.toLowerCase().split(" ");
         var cmd = (tokens.length > 0) ? tokens[0] : "help";
         var params = Arrays.copyOfRange(tokens, 1, tokens.length);
@@ -64,6 +70,8 @@ public class ChessClient {
                 state = State.SIGNEDIN;
                 yield "Leaving the game";
             }
+            case "move", "-m" -> makeMove(params);
+            case "redraw", "-r" -> redrawBoard(this.localGame);
             default -> {
                 yield help();
             }
@@ -149,11 +157,10 @@ public class ChessClient {
 
         int gameIndex;
         String gameName;
-        int gameID;
         try {
             gameIndex = Integer.parseInt(params[0]) - 1;
             List<GameDataSimple> sortedGames = getSortedGameList();
-            gameID = sortedGames.get(gameIndex).gameID();
+            this.currGameID = sortedGames.get(gameIndex).gameID();
             gameName = sortedGames.get(gameIndex).gameName();
         } catch (NumberFormatException e) {
             throw new ResponseException(400, "Error: Invalid Game index format: " + params[0]);
@@ -163,26 +170,25 @@ public class ChessClient {
 
         // Handle observer case
         if (params.length == 1 || "OBSERVER".equalsIgnoreCase(params[1])) {
-            JoinGameRequest joinGameRequest = new JoinGameRequest(null, gameID); // null for observer
+            JoinGameRequest joinGameRequest = new JoinGameRequest(null, this.currGameID); // null for observer
 //            server.joinGame(authToken, joinGameRequest);
             wsf = new WebSocketFacade(serverUrl, notificationHandler);
-            wsf.connectWebSocket(authToken, gameID);
-            displayTestBoards();
+            wsf.connectWebSocket(authToken, this.currGameID);
+//            displayTestBoards();
             state = State.OBSERVER;
             return "Successfully joined game " + gameName + " as an observer.";
         }
 
         // Handle player case
-        ChessGame.TeamColor teamColor;
         try {
-            teamColor = parseTeamColor(params[1]);
-            JoinGameRequest joinGameRequest = new JoinGameRequest(teamColor, gameID);
+            currTeamColor = parseTeamColor(params[1]);
+            JoinGameRequest joinGameRequest = new JoinGameRequest(currTeamColor, this.currGameID);
             server.joinGame(authToken, joinGameRequest);
             wsf = new WebSocketFacade(serverUrl, notificationHandler);
-            wsf.connectWebSocket(authToken, gameID);
+            wsf.connectWebSocket(authToken, this.currGameID);
             state = State.GAMEPLAY;
-            displayTestBoards();
-            return "Successfully joined game " + gameName + " as " + teamColor;
+//            displayTestBoards();
+            return "Successfully joined game " + gameName + " as " + currTeamColor;
 
         } catch (IllegalArgumentException e) {
             throw new ResponseException(400, "Error: Invalid team color. Use 'WHITE', 'BLACK', or 'OBSERVER'.");
@@ -231,6 +237,60 @@ public class ChessClient {
         } catch (ResponseException e) {
             throw new ResponseException(e.getStatusCode(), "Failed to create game: " + e.getMessage());
         }
+    }
+
+    public String makeMove(String[] params) throws ResponseException {
+        if (params.length != 1) {
+            throw new ResponseException(400, "Invalid input! Expected one string without spaces");
+        }
+
+        ChessMove chessMove = parseChessMove(params[0]);
+
+        try {
+            this.localGame.makeMove(chessMove);
+        } catch (InvalidMoveException e) {
+            throw new ResponseException(400, e.getMessage());
+        }
+
+        wsf.makeMove(authToken, this.currGameID, chessMove);
+
+        return String.format("Move made '%s'", params[0]);
+    }
+
+    public static ChessMove parseChessMove(String moveString) {
+        String[] parts = moveString.split("-");
+
+        if (parts.length != 2) {
+            throw new IllegalArgumentException("Invalid move string: " + moveString);
+        }
+
+        ChessPosition startPosition = parsePosition(parts[0]);
+        ChessPosition endPosition = parsePosition(parts[1]);
+
+        return new ChessMove(startPosition, endPosition, null); // Assuming no promotion
+    }
+
+    private static ChessPosition parsePosition(String positionString) {
+        if (positionString.length() != 2) {
+            throw new IllegalArgumentException("Invalid position string: " + positionString);
+        }
+
+        char colChar = positionString.charAt(0);
+        int row = Character.getNumericValue(positionString.charAt(1));
+
+        return new ChessPosition(ChessPosition.Column.valueOf(String.valueOf(colChar).toUpperCase()), row);
+    }
+
+    public String redrawBoard(ChessGame currGame) {
+        TestUIPrint printBoard = new TestUIPrint(currGame);
+
+        if (currTeamColor == ChessGame.TeamColor.BLACK) {
+            printBoard.drawFlippedChessBoard();
+        } else {
+            printBoard.drawNormalChessBoard();
+        }
+
+        return "";
     }
 
     private ChessGame.TeamColor parseTeamColor(String color) {
@@ -289,7 +349,10 @@ public class ChessClient {
                     * -q quit
                     """;
             case GAMEPLAY -> """
-                    - {In GamePlay:To Impliment in Phase 6}
+                    * -r redraw
+                    * -l light-moves
+                    * -m move <start letter><start number>-<dest letter><dest number> # Example: move e2-e4
+                    * resign
                     * -h help
                     * -q leave
                     """;
