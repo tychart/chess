@@ -32,7 +32,8 @@ public class ChessGame {
     }
 
     public void setNextTurn() {
-        isInCheckmate(getOpposingTeamColor(getTeamTurn()));
+//        isInCheckmate(getOpposingTeamColor(getTeamTurn()));
+//        isInStalemate(getOpposingTeamColor(getTeamTurn()));
         setTeamTurn(getOpposingTeamColor(getTeamTurn()));
     }
 

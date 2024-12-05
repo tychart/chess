@@ -51,7 +51,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public void addUser(UserData user) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String insertQuery = String.format("INSERT INTO %s (username, password, email) VALUES (?, ?, ?)", USER_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
@@ -79,7 +79,7 @@ public class SqlDataAccess implements DataAccess {
 
 
     public UserData getUser(String username) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, password, email FROM %s WHERE username = ?", USER_TABLE);
         UserData user = null;
 
@@ -111,7 +111,7 @@ public class SqlDataAccess implements DataAccess {
 
 
     public Map<String, UserData> getAllUsers() throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, password, email FROM %s", USER_TABLE);
         Map<String, UserData> users = new HashMap<>();
 
@@ -138,7 +138,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public void addAuthData(AuthData authData) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String insertQuery = String.format("INSERT INTO %s (username, authToken) VALUES (?, ?)", AUTH_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
@@ -164,7 +164,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public UserData authenticateUser(String authToken) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT username, authToken FROM %s WHERE authToken = ?", AUTH_TABLE);
         UserData returnUser = null;
 
@@ -195,7 +195,7 @@ public class SqlDataAccess implements DataAccess {
 
     // Used for logging out a user
     public void deleteAuthData(String authToken) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String deleteQuery = String.format("DELETE FROM %s WHERE authToken = ?", AUTH_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
@@ -220,7 +220,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public int getNextGameID() throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String query = String.format("SELECT gameID FROM %s", GAME_TABLE);
 
         int expectedID = 1; // Start at the minimum game ID
@@ -248,7 +248,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public void addGame(GameData gameData) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
 
         try {
             deleteGame(gameData.gameID());
@@ -285,7 +285,7 @@ public class SqlDataAccess implements DataAccess {
 
     @Override
     public void deleteGame(int gameID) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String query = String.format("DELETE FROM %s where gameID = ?", GAME_TABLE);
 
         try (PreparedStatement preparedStatement = DatabaseManager
@@ -310,7 +310,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public GameData getGame(int gameID) throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String query = String.format("SELECT * FROM %s WHERE gameID = ?", GAME_TABLE);
         GameData outGameData = null;
 
@@ -352,7 +352,7 @@ public class SqlDataAccess implements DataAccess {
     }
 
     public Map<Integer, GameData> getAllGames() throws ServiceException {
-        confirmDatabaseStructureExists();
+//        confirmDatabaseStructureExists();
         String selectQuery = String.format("SELECT * FROM %s", GAME_TABLE);
         Map<Integer, GameData> games = new HashMap<>();
 
@@ -407,6 +407,8 @@ public class SqlDataAccess implements DataAccess {
 
             statement.executeUpdate(dropTableGameData);
             System.out.println("Game data table dropped.");
+
+            this.confirmDatabaseStructureExists();
 
         } catch (DataAccessException | SQLException e) {
             System.err.println("Error clearing database: " + e.getMessage());

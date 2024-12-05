@@ -105,9 +105,43 @@ public class WebSocketHandler {
             }
 
             chessGame.makeMove(command.getChessMove());
+            ChessGame.TeamColor userColor;
 
-            chessGame.isInCheckmate(pieceColor);
-            chessGame.isInStalemate(pieceColor);
+            if (Objects.equals(gameData.whiteUsername(), currUser.username())) {
+                userColor = ChessGame.TeamColor.WHITE;
+            } else {
+                userColor = ChessGame.TeamColor.BLACK;
+            }
+
+            if (
+                    chessGame.isInCheckmate(chessGame.getTeamTurn()) ||
+                            chessGame.isInCheckmate(ChessGame.getOpposingTeamColor(chessGame.getTeamTurn()))
+            ) {
+                String winningUser;
+                if (chessGame.getTeamTurn() == userColor) { // The current user lost
+                    if (userColor == ChessGame.TeamColor.WHITE) {
+                        winningUser = gameData.blackUsername();
+                    } else {
+                        winningUser = gameData.whiteUsername();
+                    }
+                } else { // The current user won
+                    if (userColor == ChessGame.TeamColor.WHITE) {
+                        winningUser = gameData.whiteUsername();
+                    } else {
+                        winningUser = gameData.blackUsername();
+                    }
+                }
+                ServerMessage endGameNotification = new NotificationMessage("User" + winningUser + " has won! Congratulations to " + winningUser);
+                connections.broadcastAll(command.getGameID(), endGameNotification);
+            }
+
+            if (chessGame.isInStalemate(chessGame.getTeamTurn()) ||
+                chessGame.isInStalemate(ChessGame.getOpposingTeamColor(chessGame.getTeamTurn()))
+            ) {
+                ServerMessage endGameNotification = new NotificationMessage("Stalemate, unfortunately everyone looses");
+                connections.broadcastAll(command.getGameID(), endGameNotification);
+            }
+
 
             dataAccess.addGame(new GameData(
                     gameData.gameID(),
