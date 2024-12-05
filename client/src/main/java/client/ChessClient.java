@@ -1,9 +1,6 @@
 package client;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import chess.ChessMove;
 import chess.ChessPosition;
@@ -72,6 +69,7 @@ public class ChessClient {
             }
             case "move", "-m" -> makeMove(params);
             case "redraw", "-r" -> redrawBoard(this.localGame);
+            case "highlight", "-l" -> highlightMoves(params);
             default -> {
                 yield help();
             }
@@ -199,9 +197,9 @@ public class ChessClient {
     private void displayTestBoards() {
         ChessGame chessGame = new ChessGame();
         TestUIPrint printBoard = new TestUIPrint(chessGame);
-        printBoard.drawNormalChessBoard();
+        printBoard.drawNormalChessBoard(new HashSet<>());
         System.out.println();
-        printBoard.drawFlippedChessBoard();
+        printBoard.drawFlippedChessBoard(new HashSet<>());
     }
 
     public String listGames(String[] params) {
@@ -285,10 +283,24 @@ public class ChessClient {
         TestUIPrint printBoard = new TestUIPrint(currGame);
 
         if (currTeamColor == ChessGame.TeamColor.BLACK) {
-            printBoard.drawFlippedChessBoard();
+            printBoard.drawFlippedChessBoard(new HashSet<>());
         } else {
-            printBoard.drawNormalChessBoard();
+            printBoard.drawNormalChessBoard(new HashSet<>());
         }
+
+        return "";
+    }
+
+    public String highlightMoves(String[] params) throws ResponseException {
+        if (params.length != 1) {
+            throw new ResponseException(400, "Invalid input! Expected one string without spaces");
+        }
+
+        ChessPosition currPos = parsePosition(params[0]);
+
+        Collection<ChessMove> validMoves = this.localGame.validMoves(currPos);
+
+
 
         return "";
     }
@@ -350,7 +362,7 @@ public class ChessClient {
                     """;
             case GAMEPLAY -> """
                     * -r redraw
-                    * -l light-moves
+                    * -l highlight <letter><number> # Highlights possible moves for selected piece. Example: highlight e2
                     * -m move <start letter><start number>-<dest letter><dest number> # Example: move e2-e4
                     * resign
                     * -h help

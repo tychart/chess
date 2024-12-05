@@ -5,9 +5,7 @@ import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 import static client.EscapeSequences.*;
@@ -33,41 +31,41 @@ public class TestUIPrint {
 
     }
 
-    public void drawNormalChessBoard() {
+    public void drawNormalChessBoard(Collection<ChessMove> highlightPositions) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-        drawNormal(out);
+        drawNormal(out, highlightPositions);
     }
 
-    public void drawFlippedChessBoard() {
+    public void drawFlippedChessBoard(Collection<ChessMove> highlightPositions) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-        drawFlipped(out);
+        drawFlipped(out, highlightPositions);
     }
 
-    private void drawNormal(PrintStream out) {
+    private void drawNormal(PrintStream out, Collection<ChessMove> highlightPositions) {
         drawTopBoarder(out, false);
 
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) {
-            drawRowOfSquares(out, row, false);
+            drawRowOfSquares(out, row, false, highlightPositions);
         }
 
         drawBottomBoarder(out, false);
     }
 
-    private void drawFlipped(PrintStream out) {
+    private void drawFlipped(PrintStream out, Collection<ChessMove> highlightPositions) {
         drawTopBoarder(out, true);
 
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
-            drawRowOfSquares(out, row, true);
+            drawRowOfSquares(out, row, true, highlightPositions);
         }
 
         drawBottomBoarder(out, true);
     }
 
-    private void drawRowOfSquares(PrintStream out, int row, boolean flipped) {
+    private void drawRowOfSquares(PrintStream out, int row, boolean flipped, Collection<ChessMove> highlightPositions) {
         for (int squareRow = 0; squareRow < (SQUARE_SIZE_IN_PADDED_CHARS); ++squareRow) {
             drawLeftBoarder(out, row, squareRow);
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
