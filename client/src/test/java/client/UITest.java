@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import ui.TestUIPrint;
 
+import java.util.HashSet;
+
 public class UITest {
     static ChessGame chessGame;
 
@@ -34,8 +36,8 @@ public class UITest {
                 null
         ));
         TestUIPrint printBoard = new TestUIPrint(chessGame);
-        printBoard.drawNormalChessBoard();
-        printBoard.drawFlippedChessBoard();
+        printBoard.drawNormalChessBoard(new HashSet<>());
+        printBoard.drawFlippedChessBoard(new HashSet<>());
         assertTrue(true);
     }
 }
