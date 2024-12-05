@@ -187,14 +187,6 @@ public class ChessClient {
 
     }
 
-    private void displayTestBoards() {
-        ChessGame chessGame = new ChessGame();
-        TestUIPrint printBoard = new TestUIPrint(chessGame);
-        printBoard.drawNormalChessBoard(new HashSet<>());
-        System.out.println();
-        printBoard.drawFlippedChessBoard(new HashSet<>());
-    }
-
     public String listGames(String[] params) {
         List<GameDataSimple> sortedGames;
         try {

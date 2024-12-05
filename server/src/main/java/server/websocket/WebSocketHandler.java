@@ -45,8 +45,6 @@ public class WebSocketHandler {
         try {
             UserGameCommand command = null;
 
-//            UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
-
             // Try parsing as specific command types
             try {
                 command = gson.fromJson(message, MakeMoveCommand.class); // Try ConnectCommand
@@ -71,7 +69,7 @@ public class WebSocketHandler {
         }
     }
 
-    private void connect(Session session, UserGameCommand command, UserData currUser) throws IOException, ServiceException {
+    private void connect(Session session, UserGameCommand command, UserData currUser) throws ServiceException {
         dataAccess.getGame(command.getGameID());
         connections.add(command.getGameID(), command.getAuthToken(), session);
         var message = String.format("%s has joined game %d", currUser.username(), command.getGameID());
@@ -83,7 +81,7 @@ public class WebSocketHandler {
         connections.broadcastSelf(command.getGameID(), command.getAuthToken(), loadGameServerMessage);
     }
 
-    private void makeMove(Session session, MakeMoveCommand command, UserData currUser) throws IOException {
+    private void makeMove(Session session, MakeMoveCommand command, UserData currUser) throws ServiceException {
 
         try {
             GameData gameData = dataAccess.getGame(command.getGameID());
@@ -125,31 +123,12 @@ public class WebSocketHandler {
             ServerMessage notificationMessage = new NotificationMessage("User" + currUser.username() + " made the move " + command.getChessMove());
             connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), notificationMessage);
 
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            ServerMessage serverError = new ErrorMessage(e.getMessage());
-            connections.broadcastSelf(command.getGameID(), command.getAuthToken(), serverError);
+        } catch (InvalidMoveException e) {
+            throw new ServiceException(e.getMessage());
         }
     }
 
-//    private GameData getUserGame(String username) throws ServiceException {
-//        Map<Integer, GameData> games = dataAccess.getAllGames();
-//
-//        for (Integer gameID : games.keySet()) {
-//            GameData gameData = games.get(gameID);
-//
-//            if (
-//                    Objects.equals(gameData.whiteUsername(), username) ||
-//                            Objects.equals(gameData.blackUsername(), username)
-//            ) {
-//                return dataAccess.getGame(gameID);
-//            }
-//        }
-//        throw new ServiceException("Error: Unable to find game for user " + username);
-//    }
-
-    private void resign(Session session, UserGameCommand command, UserData currUser) throws IOException {
-        try {
+    private void resign(Session session, UserGameCommand command, UserData currUser) throws ServiceException {
             GameData gameData = dataAccess.getGame(command.getGameID());
             if (!gameData.game().isGoing()) {
                 throw new ServiceException("Error: If the game is not going, then you can not resign");
@@ -164,69 +143,33 @@ public class WebSocketHandler {
             ServerMessage serverMessage = new NotificationMessage("User " + currUser.username() + " has resigned, thus the game is over");
             connections.broadcastAll(command.getGameID(), serverMessage);
 
-        } catch (ServiceException e) {
-            System.out.println(e.getMessage());
-            ServerMessage serverError = new ErrorMessage(e.getMessage());
-            connections.broadcastSelf(command.getGameID(), command.getAuthToken(), serverError);
-        }
     }
 
-    private void leave(Session session, UserGameCommand command, UserData currUser) throws IOException {
+    private void leave(Session session, UserGameCommand command, UserData currUser) throws ServiceException {
         connections.remove(command.getGameID(), command.getAuthToken());
         var message = String.format("%s has left game %d", currUser.username(), command.getGameID());
         var serverMessage = new NotificationMessage(message);
 
         // Remove the player from the current game
-        try {
-            GameData gameData = dataAccess.getGame(command.getGameID());
-            if (Objects.equals(currUser.username(), gameData.whiteUsername())) {
-                dataAccess.addGame(new GameData(
-                        gameData.gameID(),
-                        null,
-                        gameData.blackUsername(),
-                        gameData.gameName(),
-                        gameData.game()
-                ));
-            } else {
-                dataAccess.addGame(new GameData(
-                        gameData.gameID(),
-                        gameData.whiteUsername(),
-                        null,
-                        gameData.gameName(),
-                        gameData.game()
-                ));
-            }
-
-        } catch (ServiceException e) {
-            System.out.println(e.getMessage());
-            ServerMessage serverError = new ErrorMessage(e.getMessage());
-            connections.broadcastSelf(command.getGameID(), command.getAuthToken(), serverError);
+        GameData gameData = dataAccess.getGame(command.getGameID());
+        if (Objects.equals(currUser.username(), gameData.whiteUsername())) {
+            dataAccess.addGame(new GameData(
+                    gameData.gameID(),
+                    null,
+                    gameData.blackUsername(),
+                    gameData.gameName(),
+                    gameData.game()
+            ));
+        } else {
+            dataAccess.addGame(new GameData(
+                    gameData.gameID(),
+                    gameData.whiteUsername(),
+                    null,
+                    gameData.gameName(),
+                    gameData.game()
+            ));
         }
-            connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), serverMessage);
+        connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), serverMessage);
     }
 
-
-//    private void enter(String visitorName, Session session) throws IOException {
-//        connections.add(visitorName, session);
-//        var message = String.format("%s is in the shop", visitorName);
-//        var notification = new Notification(Notification.Type.ARRIVAL, message);
-//        connections.broadcast(visitorName, notification);
-//    }
-//
-//    private void exit(String visitorName) throws IOException {
-//        connections.remove(visitorName);
-//        var message = String.format("%s left the shop", visitorName);
-//        var notification = new Notification(Notification.Type.DEPARTURE, message);
-//        connections.broadcast(visitorName, notification);
-//    }
-//
-//    public void makeNoise(String petName, String sound) throws ResponseException {
-//        try {
-//            var message = String.format("%s says %s", petName, sound);
-//            var notification = new Notification(Notification.Type.NOISE, message);
-//            connections.broadcast("", notification);
-//        } catch (Exception ex) {
-//            throw new ResponseException(500, ex.getMessage());
-//        }
-//    }
 }
