@@ -73,14 +73,14 @@ public class WebSocketHandler {
 
     private void connect(Session session, UserGameCommand command, UserData currUser) throws IOException, ServiceException {
         dataAccess.getGame(command.getGameID());
-        connections.add(command.getAuthToken(), session);
+        connections.add(command.getGameID(), command.getAuthToken(), session);
         var message = String.format("%s has joined game %d", currUser.username(), command.getGameID());
         var serverMessage = new NotificationMessage(message);
-        connections.broadcastAllButSelf(command.getAuthToken(), serverMessage);
+        connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), serverMessage);
 
 
         ServerMessage loadGameServerMessage = new LoadGameMessage(new Gson().toJson(dataAccess.getGame(command.getGameID()).game()));
-        connections.broadcastSelf(command.getAuthToken(), loadGameServerMessage);
+        connections.broadcastSelf(command.getGameID(), command.getAuthToken(), loadGameServerMessage);
     }
 
     private void makeMove(Session session, MakeMoveCommand command, UserData currUser) throws IOException {
@@ -120,15 +120,15 @@ public class WebSocketHandler {
             ));
 
             ServerMessage loadGameMessage = new LoadGameMessage(new Gson().toJson(chessGame));
-            connections.broadcastAll(loadGameMessage);
+            connections.broadcastAll(command.getGameID(), loadGameMessage);
 
             ServerMessage notificationMessage = new NotificationMessage("User" + currUser.username() + " made the move " + command.getChessMove());
-            connections.broadcastAllButSelf(command.getAuthToken(), notificationMessage);
+            connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), notificationMessage);
 
         } catch (Exception e) {
             System.out.println(e.getMessage());
             ServerMessage serverError = new ErrorMessage(e.getMessage());
-            connections.broadcastSelf(command.getAuthToken(), serverError);
+            connections.broadcastSelf(command.getGameID(), command.getAuthToken(), serverError);
         }
     }
 
@@ -162,17 +162,17 @@ public class WebSocketHandler {
             dataAccess.addGame(gameData);
 
             ServerMessage serverMessage = new NotificationMessage("User " + currUser.username() + " has resigned, thus the game is over");
-            connections.broadcastAll(serverMessage);
+            connections.broadcastAll(command.getGameID(), serverMessage);
 
         } catch (ServiceException e) {
             System.out.println(e.getMessage());
             ServerMessage serverError = new ErrorMessage(e.getMessage());
-            connections.broadcastSelf(command.getAuthToken(), serverError);
+            connections.broadcastSelf(command.getGameID(), command.getAuthToken(), serverError);
         }
     }
 
     private void leave(Session session, UserGameCommand command, UserData currUser) throws IOException {
-        connections.remove(command.getAuthToken());
+        connections.remove(command.getGameID(), command.getAuthToken());
         var message = String.format("%s has left game %d", currUser.username(), command.getGameID());
         var serverMessage = new NotificationMessage(message);
 
@@ -200,9 +200,9 @@ public class WebSocketHandler {
         } catch (ServiceException e) {
             System.out.println(e.getMessage());
             ServerMessage serverError = new ErrorMessage(e.getMessage());
-            connections.broadcastSelf(command.getAuthToken(), serverError);
+            connections.broadcastSelf(command.getGameID(), command.getAuthToken(), serverError);
         }
-            connections.broadcastAllButSelf(command.getAuthToken(), serverMessage);
+            connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), serverMessage);
     }
 
 
