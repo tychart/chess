@@ -295,12 +295,21 @@ public class ChessClient {
         if (params.length != 1) {
             throw new ResponseException(400, "Invalid input! Expected one string without spaces");
         }
+        TestUIPrint printBoard = new TestUIPrint(this.localGame);
 
         ChessPosition currPos = parsePosition(params[0]);
 
         Collection<ChessMove> validMoves = this.localGame.validMoves(currPos);
 
+        if (validMoves == null) {
+            validMoves = new HashSet<>();
+        }
 
+        if (currTeamColor == ChessGame.TeamColor.BLACK) {
+            printBoard.drawFlippedChessBoard(validMoves);
+        } else {
+            printBoard.drawNormalChessBoard(validMoves);
+        }
 
         return "";
     }

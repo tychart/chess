@@ -31,49 +31,64 @@ public class TestUIPrint {
 
     }
 
-    public void drawNormalChessBoard(Collection<ChessMove> highlightPositions) {
+    public void drawNormalChessBoard(Collection<ChessMove> highlightMoves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-        drawNormal(out, highlightPositions);
+        drawNormal(out, highlightMoves);
     }
 
-    public void drawFlippedChessBoard(Collection<ChessMove> highlightPositions) {
+    public void drawFlippedChessBoard(Collection<ChessMove> highlightMoves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print("\u001b[2J"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
-        drawFlipped(out, highlightPositions);
+        drawFlipped(out, highlightMoves);
     }
 
-    private void drawNormal(PrintStream out, Collection<ChessMove> highlightPositions) {
+    private void drawNormal(PrintStream out, Collection<ChessMove> highlightMoves) {
         drawTopBoarder(out, false);
 
         for (int row = BOARD_SIZE_IN_SQUARES - 1; row >= 0; row--) {
-            drawRowOfSquares(out, row, false, highlightPositions);
+            drawRowOfSquares(out, row, false, highlightMoves);
         }
 
         drawBottomBoarder(out, false);
     }
 
-    private void drawFlipped(PrintStream out, Collection<ChessMove> highlightPositions) {
+    private void drawFlipped(PrintStream out, Collection<ChessMove> highlightMoves) {
         drawTopBoarder(out, true);
 
         for (int row = 0; row < BOARD_SIZE_IN_SQUARES; ++row) {
-            drawRowOfSquares(out, row, true, highlightPositions);
+            drawRowOfSquares(out, row, true, highlightMoves);
         }
 
         drawBottomBoarder(out, true);
     }
 
     private void drawRowOfSquares(
-            PrintStream out, int row, boolean flipped, Collection<ChessMove> highlightPositions) {
+            PrintStream out, int row, boolean flipped, Collection<ChessMove> highlightMoves) {
         for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
             drawLeftBorder(out, row, squareRow);
 
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
+                ChessPosition chessPos;
+                if (!flipped) {
+                    chessPos = new ChessPosition(row + 1, col + 1);
+                } else {
+                    chessPos = new ChessPosition(row + 1, BOARD_SIZE_IN_SQUARES - col);
+                }
+
+                boolean isHighlighted = isPositionHighlighted(chessPos, highlightMoves);
+
                 // Determine the square color based on row, column, and flipped state
                 boolean isDarkSquare = (row + col) % 2 == 0;
-                setSquareColor(out, isDarkSquare, flipped);
+
+
+                if (isHighlighted) {
+                    setHighlightColor(out);
+                } else {
+                    setSquareColor(out, isDarkSquare, flipped);
+                }
 
                 // Check if this is the middle row of the square to print a piece
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
@@ -90,6 +105,21 @@ public class TestUIPrint {
     }
 
     /**
+     * Checks if a given position is highlighted based on the collection of ChessMoves.
+     */
+    private boolean isPositionHighlighted(ChessPosition position, Collection<ChessMove> highlightMoves) {
+        if (highlightMoves.isEmpty()) {
+            return false;
+        }
+        for (ChessMove move : highlightMoves) {
+            if (move.getEndPosition().equals(position)) {
+                return true; // Found a match
+            }
+        }
+        return false; // No match found
+    }
+
+    /**
      * Sets the color of the square based on whether it's dark or light and the flipped state.
      */
     private void setSquareColor(PrintStream out, boolean isDarkSquare, boolean flipped) {
@@ -98,6 +128,10 @@ public class TestUIPrint {
         } else {
             setWhite(out);
         }
+    }
+
+    private void setHighlightColor(PrintStream out) {
+        setHighlight(out);
     }
 
     /**
@@ -263,6 +297,11 @@ public class TestUIPrint {
     private static void setDarkGrey(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY); // Set background to dark gray
         out.print(SET_TEXT_COLOR_BLACK); // Set text to white
+    }
+
+    private static void setHighlight(PrintStream out) {
+        out.print(SET_BG_COLOR_YELLOW);
+        out.print(SET_TEXT_COLOR_BLACK);
     }
 
     private static void setBackgroud(PrintStream out) {
