@@ -65,54 +65,67 @@ public class TestUIPrint {
         drawBottomBoarder(out, true);
     }
 
-    private void drawRowOfSquares(PrintStream out, int row, boolean flipped, Collection<ChessMove> highlightPositions) {
-        for (int squareRow = 0; squareRow < (SQUARE_SIZE_IN_PADDED_CHARS); ++squareRow) {
-            drawLeftBoarder(out, row, squareRow);
+    private void drawRowOfSquares(
+            PrintStream out, int row, boolean flipped, Collection<ChessMove> highlightPositions) {
+        for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
+            drawLeftBorder(out, row, squareRow);
+
             for (int col = 0; col < BOARD_SIZE_IN_SQUARES; ++col) {
-                if ((row + col) % 2 == 0) {
-                    if (!flipped) {
-                        setDarkGrey(out);
-                    } else {
-                        setWhite(out);
-                    }
-                } else {
-                    if (!flipped) {
-                        setWhite(out);
-                    } else {
-                        setDarkGrey(out);
-                    }
+                // Determine the square color based on row, column, and flipped state
+                boolean isDarkSquare = (row + col) % 2 == 0;
+                setSquareColor(out, isDarkSquare, flipped);
 
-                }
-
+                // Check if this is the middle row of the square to print a piece
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-                    int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-
-                    out.print(EMPTY.repeat(prefixLength));
-
-                    if (!flipped) {
-                        out.print(this.getPiecePretty(row + 1, col + 1));
-                    } else {
-                        out.print(this.getPiecePretty(row + 1, (BOARD_SIZE_IN_SQUARES - col)));
-                    }
-
-                    out.print(EMPTY.repeat(suffixLength));
+                    drawSquareContent(out, row, col, flipped);
                 } else {
                     out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
                 }
             }
-            drawRightBoarder(out, row, squareRow);
-            setBlack(out);
+
+            drawRightBorder(out, row, squareRow);
+            setBlack(out); // Reset color after drawing each row
             out.println();
         }
     }
+
+    /**
+     * Sets the color of the square based on whether it's dark or light and the flipped state.
+     */
+    private void setSquareColor(PrintStream out, boolean isDarkSquare, boolean flipped) {
+        if ((isDarkSquare && !flipped) || (!isDarkSquare && flipped)) {
+            setDarkGrey(out);
+        } else {
+            setWhite(out);
+        }
+    }
+
+    /**
+     * Draws the content of the square for the middle row. Handles flipped state.
+     */
+    private void drawSquareContent(PrintStream out, int row, int col, boolean flipped) {
+        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
+        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+
+        out.print(EMPTY.repeat(prefixLength));
+
+        // Retrieve and print the piece for the current square
+        if (!flipped) {
+            out.print(getPiecePretty(row + 1, col + 1));
+        } else {
+            out.print(getPiecePretty(row + 1, BOARD_SIZE_IN_SQUARES - col));
+        }
+
+        out.print(EMPTY.repeat(suffixLength));
+    }
+
 
     private static void drawTopBoarder(PrintStream out, boolean flipped) {
         drawHorizontalLabels(out, flipped);
         drawHorizontalLine(out);
     }
 
-    private static void drawLeftBoarder(PrintStream out, int row, int squareRow) {
+    private static void drawLeftBorder(PrintStream out, int row, int squareRow) {
 
         drawVerticalLabels(out, row, squareRow);
         drawVerticalLine(out);
@@ -124,7 +137,7 @@ public class TestUIPrint {
         drawHorizontalLabels(out, flipped);
     }
 
-    private static void drawRightBoarder(PrintStream out, int row, int squareRow) {
+    private static void drawRightBorder(PrintStream out, int row, int squareRow) {
 
         drawVerticalLine(out);
         drawVerticalLabels(out, row, squareRow);
