@@ -190,6 +190,14 @@ public class ChessGame {
         return true;
     }
 
+    public void resign() {
+        this.gameStatus = false;
+    }
+
+    public boolean isGoing() {
+        return this.gameStatus;
+    }
+
     /**
      * Sets this game's chessboard with a given board
      *

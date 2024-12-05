@@ -24,6 +24,7 @@ import websocket.messages.ServerMessage;
 import chess.*;
 
 import java.io.IOException;
+import java.rmi.ServerError;
 import java.util.Map;
 import java.util.Objects;
 
@@ -60,6 +61,7 @@ public class WebSocketHandler {
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, command, currUser);
                 case MAKE_MOVE -> makeMove(session, (MakeMoveCommand) command, currUser);
+                case RESIGN -> resign(session, command, currUser);
                 case LEAVE -> leave(session, command, currUser);
             }
         } catch (ServiceException e) {
@@ -87,8 +89,9 @@ public class WebSocketHandler {
             GameData gameData = dataAccess.getGame(command.getGameID());
 
             ChessGame chessGame = gameData.game();
+            ChessGame.TeamColor pieceColor = chessGame.getBoard().getPiece(command.getChessMove().getStartPosition()).getTeamColor();
 
-            switch (chessGame.getBoard().getPiece(command.getChessMove().getStartPosition()).getTeamColor()) {
+            switch (pieceColor) {
                 case WHITE:
                     if (!Objects.equals(currUser.username(), gameData.whiteUsername())) {
                         throw new InvalidMoveException("Error: Don't move the other player's piece!");
@@ -104,6 +107,9 @@ public class WebSocketHandler {
             }
 
             chessGame.makeMove(command.getChessMove());
+
+            chessGame.isInCheckmate(pieceColor);
+            chessGame.isInStalemate(pieceColor);
 
             dataAccess.addGame(new GameData(
                     gameData.gameID(),
@@ -142,12 +148,61 @@ public class WebSocketHandler {
 //        throw new ServiceException("Error: Unable to find game for user " + username);
 //    }
 
+    private void resign(Session session, UserGameCommand command, UserData currUser) throws IOException {
+        try {
+            GameData gameData = dataAccess.getGame(command.getGameID());
+            if (!gameData.game().isGoing()) {
+                throw new ServiceException("Error: If the game is not going, then you can not resign");
+            }
+            if (!Objects.equals(currUser.username(), gameData.whiteUsername()) && !Objects.equals(currUser.username(), gameData.blackUsername())) {
+                throw new ServiceException("Error: If you are not playing, you can not resign");
+            }
+
+            gameData.game().resign();
+            dataAccess.addGame(gameData);
+
+            ServerMessage serverMessage = new NotificationMessage("User " + currUser.username() + " has resigned, thus the game is over");
+            connections.broadcastAll(serverMessage);
+
+        } catch (ServiceException e) {
+            System.out.println(e.getMessage());
+            ServerMessage serverError = new ErrorMessage(e.getMessage());
+            connections.broadcastSelf(command.getAuthToken(), serverError);
+        }
+    }
+
     private void leave(Session session, UserGameCommand command, UserData currUser) throws IOException {
         connections.remove(command.getAuthToken());
         var message = String.format("%s has left game %d", currUser.username(), command.getGameID());
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-//        serverMessage.addMessage(message);
-        connections.broadcastAllButSelf(command.getAuthToken(), serverMessage);
+        var serverMessage = new NotificationMessage(message);
+
+        // Remove the player from the current game
+        try {
+            GameData gameData = dataAccess.getGame(command.getGameID());
+            if (Objects.equals(currUser.username(), gameData.whiteUsername())) {
+                dataAccess.addGame(new GameData(
+                        gameData.gameID(),
+                        null,
+                        gameData.blackUsername(),
+                        gameData.gameName(),
+                        gameData.game()
+                ));
+            } else {
+                dataAccess.addGame(new GameData(
+                        gameData.gameID(),
+                        gameData.whiteUsername(),
+                        null,
+                        gameData.gameName(),
+                        gameData.game()
+                ));
+            }
+
+        } catch (ServiceException e) {
+            System.out.println(e.getMessage());
+            ServerMessage serverError = new ErrorMessage(e.getMessage());
+            connections.broadcastSelf(command.getAuthToken(), serverError);
+        }
+            connections.broadcastAllButSelf(command.getAuthToken(), serverMessage);
     }
 
 
