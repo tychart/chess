@@ -70,9 +70,21 @@ public class WebSocketHandler {
     }
 
     private void connect(Session session, UserGameCommand command, UserData currUser) throws ServiceException {
-        dataAccess.getGame(command.getGameID());
+        GameData gameData = dataAccess.getGame(command.getGameID());
         connections.add(command.getGameID(), command.getAuthToken(), session);
-        var message = String.format("%s has joined game %d", currUser.username(), command.getGameID());
+
+        String playerType;
+        System.out.printf("CurrUsername '%s', whiteUsername '%s', blackUsername '%s'", currUser.username(), gameData.whiteUsername(), gameData.blackUsername());
+        if (Objects.equals(gameData.whiteUsername(), currUser.username())) {
+            playerType = "White";
+        } else if (Objects.equals(gameData.blackUsername(), currUser.username())) {
+            playerType = "Black";
+        } else {
+            playerType = "Observer";
+        }
+        System.out.printf("Chose %s", playerType);
+
+        var message = String.format("%s has joined game %d as %s", currUser.username(), command.getGameID(), playerType);
         var serverMessage = new NotificationMessage(message);
         connections.broadcastAllButSelf(command.getGameID(), command.getAuthToken(), serverMessage);
 
@@ -113,33 +125,64 @@ public class WebSocketHandler {
                 userColor = ChessGame.TeamColor.BLACK;
             }
 
+            // Check to see if either player is in checkmate
             if (
                     chessGame.isInCheckmate(chessGame.getTeamTurn()) ||
-                            chessGame.isInCheckmate(ChessGame.getOpposingTeamColor(chessGame.getTeamTurn()))
+                    chessGame.isInCheckmate(ChessGame.getOpposingTeamColor(chessGame.getTeamTurn()))
             ) {
                 String winningUser;
+                String loosingUser;
                 if (chessGame.getTeamTurn() == userColor) { // The current user lost
                     if (userColor == ChessGame.TeamColor.WHITE) {
                         winningUser = gameData.blackUsername();
+                        loosingUser = gameData.whiteUsername();
                     } else {
                         winningUser = gameData.whiteUsername();
+                        loosingUser = gameData.blackUsername();
                     }
                 } else { // The current user won
                     if (userColor == ChessGame.TeamColor.WHITE) {
                         winningUser = gameData.whiteUsername();
+                        loosingUser = gameData.blackUsername();
                     } else {
                         winningUser = gameData.blackUsername();
+                        loosingUser = gameData.whiteUsername();
                     }
                 }
-                ServerMessage endGameNotification = new NotificationMessage("User" + winningUser + " has won! Congratulations to " + winningUser);
+                ServerMessage endGameNotification = new NotificationMessage("User " + loosingUser + " has been checkmated. User " + winningUser + " has won! Congratulations to " + winningUser);
+
                 connections.broadcastAll(command.getGameID(), endGameNotification);
             }
 
-            if (chessGame.isInStalemate(chessGame.getTeamTurn()) ||
-                chessGame.isInStalemate(ChessGame.getOpposingTeamColor(chessGame.getTeamTurn()))
-            ) {
-                ServerMessage endGameNotification = new NotificationMessage("Stalemate, unfortunately everyone looses");
-                connections.broadcastAll(command.getGameID(), endGameNotification);
+            // Check if either player is in check
+            if (chessGame.isGoing()) {
+                if (chessGame.isInCheck(userColor)) {
+                    String checkUser = "";
+                    if (userColor == ChessGame.TeamColor.WHITE) {
+                        checkUser = gameData.whiteUsername();
+                    } else {
+                        checkUser = gameData.blackUsername();
+                    }
+
+                    ServerMessage checkNotification = new NotificationMessage("User " + checkUser + " is in check!");
+                    connections.broadcastAll(command.getGameID(), checkNotification);
+                } else if (chessGame.isInCheck(ChessGame.getOpposingTeamColor(userColor))) {
+                    String checkUser = "";
+                    if (userColor == ChessGame.TeamColor.WHITE) {
+                        checkUser = gameData.blackUsername();
+                    } else {
+                        checkUser = gameData.whiteUsername();
+                    }
+                    ServerMessage checkNotification = new NotificationMessage("User " + checkUser + " is in check!");
+                    connections.broadcastAll(command.getGameID(), checkNotification);
+                }
+
+                if (chessGame.isInStalemate(chessGame.getTeamTurn()) ||
+                        chessGame.isInStalemate(ChessGame.getOpposingTeamColor(chessGame.getTeamTurn()))
+                ) {
+                    ServerMessage endGameNotification = new NotificationMessage("Stalemate, unfortunately everyone looses");
+                    connections.broadcastAll(command.getGameID(), endGameNotification);
+                }
             }
 
 
@@ -194,7 +237,7 @@ public class WebSocketHandler {
                     gameData.gameName(),
                     gameData.game()
             ));
-        } else {
+        } else if (Objects.equals(currUser.username(), gameData.blackUsername())) {
             dataAccess.addGame(new GameData(
                     gameData.gameID(),
                     gameData.whiteUsername(),

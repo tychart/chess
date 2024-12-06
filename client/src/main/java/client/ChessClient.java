@@ -2,12 +2,9 @@ package client;
 
 import java.util.*;
 
-import chess.ChessMove;
-import chess.ChessPosition;
-import chess.InvalidMoveException;
+import chess.*;
 import exception.ResponseException;
 import model.*;
-import chess.ChessGame;
 import ui.TestUIPrint;
 
 
@@ -39,6 +36,7 @@ public class ChessClient {
             case SIGNEDIN -> authenicatedSwitch(params, cmd);
             case GAMEPLAY -> gameplaySwitch(params, cmd);
             case OBSERVER -> observerSwitch(params, cmd);
+            case CONFIRM -> confirmSwitch(params, cmd);
         };
     }
 
@@ -67,7 +65,7 @@ public class ChessClient {
             case "redraw", "-r" -> redrawBoard(this.localGame);
             case "highlight", "-l" -> highlightMoves(params);
             case "leave", "-q" -> leaveGame();
-            case "resign" -> resignGame(params);
+            case "resign" -> askToResign();
             default -> help();
         };
     }
@@ -81,6 +79,15 @@ public class ChessClient {
             default -> help();
         };
     }
+
+    private String confirmSwitch(String[] params, String cmd) throws ResponseException {
+        return switch (cmd) {
+            case "resign", "y", "yes" -> resignGame(params);
+            default -> doNotResign();
+        };
+    }
+
+
 
 
 
@@ -223,8 +230,16 @@ public class ChessClient {
     }
 
     public String makeMove(String[] params) throws ResponseException {
-        if (params.length != 1) {
-            throw new ResponseException(400, "Invalid input! Expected one string without spaces");
+        if (params.length < 1) {
+            throw new ResponseException(400, "Invalid input! Expected at least one string");
+        }
+        ChessPiece.PieceType promotionPiece = null;
+        if (params.length > 2) {
+            throw new ResponseException(400, "Invalid input! Expected at most 2 strings");
+        }
+
+        if (params.length == 2) {
+
         }
 
         if (!this.localGame.isGoing()) {
@@ -258,15 +273,59 @@ public class ChessClient {
     }
 
     private static ChessPosition parsePosition(String positionString) {
-        if (positionString.length() != 2) {
-            throw new IllegalArgumentException("Invalid position string: " + positionString);
+        // Ensure the string has exactly 2 characters
+        if (positionString == null || positionString.length() != 2) {
+            throw new IllegalArgumentException("Invalid position string: " + positionString + ". Must be in the format 'e3' or 'f7'.");
         }
 
+        // Extract the column character and row number
         char colChar = positionString.charAt(0);
-        int row = Character.getNumericValue(positionString.charAt(1));
+        char rowChar = positionString.charAt(1);
 
-        return new ChessPosition(ChessPosition.Column.valueOf(String.valueOf(colChar).toUpperCase()), row);
+        // Check that the column is between 'a' and 'h'
+        if (colChar < 'a' || colChar > 'h') {
+            throw new IllegalArgumentException("Invalid column: " + colChar + ". Must be a letter between 'a' and 'h'.");
+        }
+
+        // Check that the row is a digit between '1' and '8'
+        if (rowChar < '1' || rowChar > '8') {
+            throw new IllegalArgumentException("Invalid row: " + rowChar + ". Must be a number between '1' and '8'.");
+        }
+
+        // Convert the row character to an integer
+        int row = Character.getNumericValue(rowChar);
+
+        // Convert the column character to uppercase and map to ChessPosition.Column
+        ChessPosition.Column column = ChessPosition.Column.valueOf(String.valueOf(colChar).toUpperCase());
+
+        // Return a valid ChessPosition
+        return new ChessPosition(column, row);
     }
+
+    /**
+     * Parses a string into a PieceType enum, ignoring case.
+     *
+     * @param pieceTypeString The input string representing a chess piece type.
+     * @return The corresponding PieceType enum.
+     * @throws IllegalArgumentException if the input does not match any PieceType.
+     */
+    public static ChessPiece.PieceType parsePieceType(String pieceTypeString) {
+        if (pieceTypeString == null || pieceTypeString.trim().isEmpty()) {
+            throw new IllegalArgumentException("Input string cannot be null or empty.");
+        }
+
+        try {
+            // Normalize the input string to uppercase and match it with the enum
+            return ChessPiece.PieceType.valueOf(pieceTypeString.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Provide a detailed error message for invalid input
+            throw new IllegalArgumentException(
+                    "Invalid piece type: '" + pieceTypeString + "'. Valid options are: " +
+                            Arrays.toString(ChessPiece.PieceType.values())
+            );
+        }
+    }
+
 
     public String redrawBoard(ChessGame currGame) {
         TestUIPrint printBoard = new TestUIPrint(currGame);
@@ -309,14 +368,17 @@ public class ChessClient {
         return "Leaving the game";
     }
 
-    public String resignGame(String[] params) throws ResponseException {
-        if (params.length != 1) {
-            throw new ResponseException(400, "Invalid input! Need confermaion of 'YES' or 'Y'");
-        }
-        if (!params[0].equalsIgnoreCase("YES") && !params[0].equalsIgnoreCase("Y")){
-            throw new ResponseException(400, "Invalid input! Need confermaion of 'YES' or 'Y'");
-        }
+    public String askToResign() {
+        state = State.CONFIRM;
+        return help();
+    }
 
+    public String doNotResign() {
+        state = State.GAMEPLAY;
+        return help();
+    }
+
+    public String resignGame(String[] params) throws ResponseException {
         wsf.resign(this.authToken, this.currGameID);
         return "Resigning the game, you loose";
     }
@@ -387,8 +449,8 @@ public class ChessClient {
             case GAMEPLAY -> """
                     * -r redraw
                     * -l highlight <letter><number> # Highlights possible moves for selected piece. Example: highlight e2
-                    * -m move <start letter><start number>-<dest letter><dest number> # Example: move e2-e4
-                    * resign [YES|Y]
+                    * -m move <start letter><start number>-<dest letter><dest number> [QUEEN|BISHOP|KNIGHT|ROOK] # Example: move e2-e4 KNIGHT # Promotion if applicable
+                    * resign
                     * -h help
                     * -q leave
                     """;
@@ -397,6 +459,11 @@ public class ChessClient {
                     * -l highlight <letter><number> # Highlights possible moves for selected piece. Example: highlight e2
                     * -h help
                     * -q leave
+                    """;
+            case CONFIRM -> """
+                    Are you absolutely sure you want to resign the game?
+                    * [y|yes]
+                    * [n|no]
                     """;
         };
     }

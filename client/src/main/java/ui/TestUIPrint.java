@@ -33,14 +33,14 @@ public class TestUIPrint {
 
     public void drawNormalChessBoard(Collection<ChessMove> highlightMoves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        out.print("\u001b[2J"); // Clear the screen.
+        out.print("\u001b[2J\n"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
         drawNormal(out, highlightMoves);
     }
 
     public void drawFlippedChessBoard(Collection<ChessMove> highlightMoves) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-        out.print("\u001b[2J"); // Clear the screen.
+        out.print("\u001b[2J\n"); // Clear the screen.
         this.chessBoard = chessGame.getBoard();
         drawFlipped(out, highlightMoves);
     }
@@ -99,7 +99,7 @@ public class TestUIPrint {
             }
 
             drawRightBorder(out, row, squareRow);
-            setBlack(out); // Reset color after drawing each row
+            setBackgroud(out); // Reset color after drawing each row
             out.println();
         }
     }
@@ -124,7 +124,7 @@ public class TestUIPrint {
      */
     private void setSquareColor(PrintStream out, boolean isDarkSquare, boolean flipped) {
         if ((isDarkSquare && !flipped) || (!isDarkSquare && flipped)) {
-            setDarkGrey(out);
+            setLightGrey(out);
         } else {
             setWhite(out);
         }
@@ -296,7 +296,12 @@ public class TestUIPrint {
 
     private static void setDarkGrey(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY); // Set background to dark gray
-        out.print(SET_TEXT_COLOR_BLACK); // Set text to white
+        out.print(SET_TEXT_COLOR_BLACK); // Set text to black
+    }
+
+    private static void setLightGrey(PrintStream out) {
+        out.print(SET_BG_COLOR_LIGHT_GREY); // Set background to dark gray
+        out.print(SET_TEXT_COLOR_BLACK); // Set text to black
     }
 
     private static void setHighlight(PrintStream out) {
@@ -305,6 +310,6 @@ public class TestUIPrint {
     }
 
     private static void setBackgroud(PrintStream out) {
-        setBlack(out);
+        out.print(RESET);
     }
 }
