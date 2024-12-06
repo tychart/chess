@@ -239,14 +239,18 @@ public class ChessClient {
         }
 
         if (params.length == 2) {
-
+            try {
+                promotionPiece = parsePromotionPieceType(params[1]);
+            } catch (IllegalArgumentException e) {
+                throw new ResponseException(400, "Invalid input! " + e.getMessage());
+            }
         }
 
         if (!this.localGame.isGoing()) {
             throw new ResponseException(400, "Error: Can't move, game is over");
         }
 
-        ChessMove chessMove = parseChessMove(params[0]);
+        ChessMove chessMove = parseChessMove(params[0], promotionPiece);
 
         try {
             this.localGame.makeMove(chessMove);
@@ -259,7 +263,7 @@ public class ChessClient {
         return String.format("Move made '%s'", params[0]);
     }
 
-    public static ChessMove parseChessMove(String moveString) {
+    public static ChessMove parseChessMove(String moveString, ChessPiece.PieceType promotionPiece) {
         String[] parts = moveString.split("-");
 
         if (parts.length != 2) {
@@ -269,7 +273,7 @@ public class ChessClient {
         ChessPosition startPosition = parsePosition(parts[0]);
         ChessPosition endPosition = parsePosition(parts[1]);
 
-        return new ChessMove(startPosition, endPosition, null); // Assuming no promotion
+        return new ChessMove(startPosition, endPosition, promotionPiece); // Assuming no promotion
     }
 
     private static ChessPosition parsePosition(String positionString) {
@@ -303,28 +307,38 @@ public class ChessClient {
     }
 
     /**
-     * Parses a string into a PieceType enum, ignoring case.
+     * Parses a string into a valid promotion PieceType enum (QUEEN, BISHOP, KNIGHT, ROOK), ignoring case.
      *
      * @param pieceTypeString The input string representing a chess piece type.
      * @return The corresponding PieceType enum.
-     * @throws IllegalArgumentException if the input does not match any PieceType.
+     * @throws IllegalArgumentException if the input does not match a valid promotion piece.
      */
-    public static ChessPiece.PieceType parsePieceType(String pieceTypeString) {
+    public static ChessPiece.PieceType parsePromotionPieceType(String pieceTypeString) {
         if (pieceTypeString == null || pieceTypeString.trim().isEmpty()) {
             throw new IllegalArgumentException("Input string cannot be null or empty.");
         }
 
-        try {
-            // Normalize the input string to uppercase and match it with the enum
-            return ChessPiece.PieceType.valueOf(pieceTypeString.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            // Provide a detailed error message for invalid input
-            throw new IllegalArgumentException(
-                    "Invalid piece type: '" + pieceTypeString + "'. Valid options are: " +
-                            Arrays.toString(ChessPiece.PieceType.values())
-            );
+        // Normalize the input string
+        String normalizedInput = pieceTypeString.trim().toUpperCase();
+
+        // Validate against allowed promotion pieces
+        switch (normalizedInput) {
+            case "QUEEN":
+                return ChessPiece.PieceType.QUEEN;
+            case "BISHOP":
+                return ChessPiece.PieceType.BISHOP;
+            case "KNIGHT":
+                return ChessPiece.PieceType.KNIGHT;
+            case "ROOK":
+                return ChessPiece.PieceType.ROOK;
+            default:
+                throw new IllegalArgumentException(
+                        "Invalid promotion piece type: '" + pieceTypeString +
+                                "'. Valid options are: QUEEN, BISHOP, KNIGHT, ROOK."
+                );
         }
     }
+
 
 
     public String redrawBoard(ChessGame currGame) {
